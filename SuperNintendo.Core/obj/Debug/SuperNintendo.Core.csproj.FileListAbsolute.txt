@@ -1,0 +1,6 @@
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\obj\Debug\SuperNintendo.Core.csprojAssemblyReference.cache
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\obj\Debug\SuperNintendo.Core.csproj.CoreCompileInputs.cache
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\bin\Debug\SuperNintendo.Core.dll
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\bin\Debug\SuperNintendo.Core.pdb
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\obj\Debug\SuperNintendo.Core.dll
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Core\obj\Debug\SuperNintendo.Core.pdb

@@ -1,0 +1,6 @@
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\bin\Debug\SuperNintendo.Sound.dll
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\bin\Debug\SuperNintendo.Sound.pdb
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\obj\Debug\SuperNintendo.Sound.csprojAssemblyReference.cache
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\obj\Debug\SuperNintendo.Sound.csproj.CoreCompileInputs.cache
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\obj\Debug\SuperNintendo.Sound.dll
+C:\Users\Leechking\Downloads\code\SuperNintendoEmulator\SuperNintendo.Sound\obj\Debug\SuperNintendo.Sound.pdb
