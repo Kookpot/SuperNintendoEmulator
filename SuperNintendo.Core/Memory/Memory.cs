@@ -1,17 +1,12 @@
-﻿using System;
+﻿using SuperNintendo.Core.SFX;
+using System;
 using System.IO;
 
 namespace SuperNintendo.Core.Memory
 {
-    /// <summary>
-    /// memory
-    /// </summary>
     public static class Memory
     {
         #region Public Members
-
-        //private static byte[] NSRTHeader = new byte[32];
-        //private static int HeaderCount;
 
         private static int RAMPosition;
         private static int ROMPosition;
@@ -23,59 +18,28 @@ namespace SuperNintendo.Core.Memory
         private static int OBC1RAMPosition;
         private static int BSRAMPosition;
         private static int BIOSROM;
+        private static byte ROMRegion;
+        private static byte ROMSpeed;
+        private static byte ROMType;
+        private static byte ROMSize;
+        private static byte SRAMSize;
+        private static uint SRAMMask;
 
-        //private static byte[] Map = new byte[Constants.NUM_BLOCKS];
-        //private static byte[] WriteMap = new byte[Constants.NUM_BLOCKS];
-        //private static byte[] BlockIsRAM = new byte[Constants.NUM_BLOCKS];
-        //private static byte[] BlockIsROM = new byte[Constants.NUM_BLOCKS];
-        //private static byte ExtendedFormat;
+        private static int[] Map = new int[Constants.NUM_BLOCKS];
+        private static int[] WriteMap = new int[Constants.NUM_BLOCKS];
+        private static bool[] BlockIsRAM = new bool[Constants.NUM_BLOCKS];
+        private static bool[] BlockIsROM = new bool[Constants.NUM_BLOCKS];
+        private static int ROMFramesPerSecond;
 
-        //private static string ROMFileName;
-        //private static string ROMName;
-        //private static string RawROMName;
-        //private static string ROMId;
-
-        //private static int CompanyId;
-        //private static byte ROMRegion;
-        //private static byte ROMSpeed;
-        //private static byte ROMType;
-        //private static byte ROMSize;
-        //private static uint ROMChecksum;
-        //private static uint ROMComplementChecksum;
-        //private static uint ROMCRC32;
-
-        //private static string ROMSHA256;
-        //private static int ROMFramesPerSecond;
-
-        //private static bool HiRom;
         private static bool LoROM;
-        //private static byte SRAMSize;
-        //private static uint SRAMMask;
         private static int CalculatedSize;
-        //private static uint CalculatedChecksum;
 
         public static Action PostRomInitFunc;
 
-        //private static SByte _objOpenBus;
-        // bank     //offset
-        //$00-$3F	$0000-$1FFF	LowRAM
-        //$00-$3F   $2000-$2FFF	PPU1, APU
-        //$00-$3F   $3000-$3FFF	DSP, SuperFX	hardware registers
-        //$00-$3F   $4000-$41FF	controller	hardware registers
-        //$00-$3F   $4200-$4FFF	DMA, PPU2?	hardware registers
-        //$00-$3F   $6000-$7FFF	Chips	enhancement chips memory
-        //$00-$3F   $8000-$FFFF	ROM	Data that is mapped here depends on the cartridge.
-        //$40-$7D	$0000-$FFFF	ROM	Data that is mapped here depends on the cartridge.
-        //$7E	    $0000-$1FFF	LowRAM
-        //$7E       $2000-$7FFF	HighRAM
-        //$7E       $8000-$FFFF	Extended RAM
-        //$7F	    $0000-$FFFF	Extended RAM
         public static byte[] RAM = new byte[0x20000];
         public static byte[] SRAM = new byte[0x20000];
         public static byte[] VRAM = new byte[0x10000];
         public static byte[] ROM = new byte[Constants.MAX_ROM_SIZE + 0x200 + 0x8000];
-        
-        //private static Byte[] _objMemory = new Byte[16777216];
 
         #endregion
 
@@ -94,11 +58,11 @@ namespace SuperNintendo.Core.Memory
             BIOSROM = ROMPosition + 0x300000;
             BSRAMPosition = ROMPosition + 0x400000;
 
-            //SuperFX.pvRegisters = FillRAM + 0x3000;
-            //SuperFX.nRamBanks = 2; // Most only use 1.  1=64KB=512Mb, 2=128KB=1024Mb
-            //SuperFX.pvRam = SRAM;
-            //SuperFX.nRomBanks = (2 * 1024 * 1024) / (32 * 1024);
-            //SuperFX.pvRom = (uint8*)ROM;
+            SuperFX.pvRegisterPosition = FillRAMPosition + 0x3000;
+            SuperFX.nRamBanks = 2; // Most only use 1.  1=64KB=512Mb, 2=128KB=1024Mb
+            SuperFX.pvRamPosition = SRAMPosition;
+            SuperFX.nRomBanks = (2 * 1024 * 1024) / (32 * 1024);
+            SuperFX.pvRomPosition = ROMPosition;
 
             PostRomInitFunc = null;
             return true;
@@ -270,9 +234,270 @@ namespace SuperNintendo.Core.Memory
 	        return zeroCount;
         }
 
+        private static void InitBSX()
+        {
+            Settings.BSXItself = false;
+            Settings.BS = false;
+        }
+
+        private static void ParseSNESHeader(int position)
+        {
+            ROMSize = ROM[position + 0x27];
+            SRAMSize = ROM[position + 0x28];
+            ROMSpeed = ROM[position + 0x25];
+            ROMType = ROM[position + 0x26];
+            ROMRegion = ROM[position + 0x29];
+        }
+
+        private static void MapInitialize()
+        {
+            for (int c = 0; c < 0x1000; c++)
+            {
+                Map[c] = (int) MappingType.MAP_NONE;
+                WriteMap[c] = (int)MappingType.MAP_NONE;
+                BlockIsROM[c] = false;
+                BlockIsRAM[c] = false;
+            }
+        }
+
+        private static void MapSpace(uint bank_s, uint bank_e, uint addr_s, uint addr_e, int dataPosition)
+        {
+            uint c, i, p;
+
+            for (c = bank_s; c <= bank_e; c++)
+            {
+                for (i = addr_s; i <= addr_e; i += 0x1000)
+                {
+                    p = (c << 4) | (i >> 12);
+                    Map[p] = dataPosition;
+                    BlockIsROM[p] = false;
+                    BlockIsRAM[p] = true;
+                }
+            }
+        }
+
+        private static void MapIndex(uint bank_s, uint bank_e, uint addr_s, uint addr_e, MappingType index, MapType type)
+        {
+            uint c, i, p;
+            bool isROM, isRAM;
+
+            isROM = ((type == MapType.MAP_TYPE_I_O) || (type == MapType.MAP_TYPE_RAM)) ? false : true;
+            isRAM = ((type == MapType.MAP_TYPE_I_O) || (type == MapType.MAP_TYPE_ROM)) ? false : true;
+
+            for (c = bank_s; c <= bank_e; c++)
+            {
+                for (i = addr_s; i <= addr_e; i += 0x1000)
+                {
+                    p = (c << 4) | (i >> 12);
+                    Map[p] = (int) index;
+                    BlockIsROM[p] = isROM;
+                    BlockIsRAM[p] = isRAM;
+                }
+            }
+        }
+
+        private static void MapWRAM()
+        {
+            // will overwrite others
+            MapSpace(0x7e, 0x7e, 0x0000, 0xffff, RAMPosition);
+            MapSpace(0x7f, 0x7f, 0x0000, 0xffff, RAMPosition + 0x10000);
+        }
+
+        private static void MapSystem()
+        {
+            // will be overwritten
+            MapSpace(0x00, 0x3f, 0x0000, 0x1fff, RAMPosition);
+            MapIndex(0x00, 0x3f, 0x2000, 0x3fff, MappingType.MAP_PPU, MapType.MAP_TYPE_I_O);
+            MapIndex(0x00, 0x3f, 0x4000, 0x5fff, MappingType.MAP_CPU, MapType.MAP_TYPE_I_O);
+            MapSpace(0x80, 0xbf, 0x0000, 0x1fff, RAMPosition);
+            MapIndex(0x80, 0xbf, 0x2000, 0x3fff, MappingType.MAP_PPU, MapType.MAP_TYPE_I_O);
+            MapIndex(0x80, 0xbf, 0x4000, 0x5fff, MappingType.MAP_CPU, MapType.MAP_TYPE_I_O);
+        }
+
+        private static uint MapMirror(uint size, uint pos)
+        {
+            // from bsnes
+            if (size == 0)
+                return (0);
+
+            if (pos < size)
+                return (pos);
+
+            uint mask = (uint) 1 << 31;
+            while ((pos & mask) == 0)
+                mask >>= 1;
+
+            if (size <= (pos & mask))
+                return MapMirror(size, pos - mask);
+            else
+                return mask + MapMirror(size - mask, pos - mask);
+        }
+
+        private static void MapLoROM(uint bank_s, uint bank_e, uint addr_s, uint addr_e, uint size)
+        {
+            uint c, i, p, addr;
+
+            for (c = bank_s; c <= bank_e; c++)
+            {
+                for (i = addr_s; i <= addr_e; i += 0x1000)
+                {
+                    p = (c << 4) | (i >> 12);
+                    addr = (c & 0x7f) * 0x8000;
+                    Map[p] = (int) (ROMPosition + MapMirror(size, addr) - (i & 0x8000));
+                    BlockIsROM[p] = true;
+                    BlockIsRAM[p] = true;
+                }
+            }
+        }
+
+        private static void MapLoROMSRAM()
+        {
+            uint hi;
+
+            if (SRAMSize == 0)
+                return;
+
+            if (ROMSize > 11 || SRAMSize > 5)
+                hi = 0x7fff;
+            else
+                hi = 0xffff;
+
+            MapIndex(0x70, 0x7d, 0x0000, hi, MappingType.MAP_LOROM_SRAM, MapType.MAP_TYPE_RAM);
+            MapIndex(0xf0, 0xff, 0x0000, hi, MappingType.MAP_LOROM_SRAM, MapType.MAP_TYPE_RAM);
+        }
+
+        private static void MapWriteProtectROM()
+        {
+            for (var i = 0; i < Map.Length; i++)
+                WriteMap[i] = Map[i];
+
+            for (int c = 0; c < 0x1000; c++)
+                if (BlockIsROM[c])
+                    WriteMap[c] = (int) MappingType.MAP_NONE;
+        }
+
+        private static void MapLoROMMap()
+        {
+            MapSystem();
+
+            MapLoROM(0x00, 0x3f, 0x8000, 0xffff, (uint) CalculatedSize);
+            MapLoROM(0x40, 0x7f, 0x0000, 0xffff, (uint) CalculatedSize);
+            MapLoROM(0x80, 0xbf, 0x8000, 0xffff, (uint) CalculatedSize);
+            MapLoROM(0xc0, 0xff, 0x0000, 0xffff, (uint) CalculatedSize);
+
+            MapLoROMSRAM();
+            MapWRAM();
+
+            MapWriteProtectROM();
+        }
+
         private static int InitROM()
         {
-            return 0;
+            Settings.SuperFX = false;
+            Settings.DSP = 0;
+            Settings.SA1 = false;
+            Settings.C4 = false;
+            Settings.SDD1 = false;
+            Settings.SPC7110 = false;
+            Settings.SPC7110RTC = false;
+            Settings.OBC1 = false;
+            Settings.SETA = 0;
+            Settings.SRTC = false;
+            Settings.BS = false;
+            Settings.MSU1 = false;
+
+            SuperFX.nRomBanks = CalculatedSize >> 15;
+
+            //// Parse ROM header and read ROM informatoin
+            InitBSX(); // Set BS header before parsing
+
+            var romHeaderPosition = ROMPosition + 0x7FB0;
+            ParseSNESHeader(romHeaderPosition);
+
+            //// Detect and initialize chips
+            //// detection codes are compatible with NSRT
+
+            // DSP1/2/3/4
+            DSP.DSP.SetDSP = null;
+            DSP.DSP.GetDSP = null;
+
+            // MSU1
+            Settings.MSU1 = false;
+
+            //// Map memory and calculate checksum
+
+            MapInitialize();
+            MapLoROMMap();
+
+            Settings.PAL = false;
+            Settings.FrameTime = Settings.FrameTimeNTSC;
+            ROMFramesPerSecond = 60;
+
+            // SRAM size
+            SRAMMask = SRAMSize > 0 ? (uint) ((1 << (SRAMSize + 3)) * 128) - 1 : 0;
+
+            //// Initialize emulation
+
+            Timings.H_Max_Master = SNES_CYCLES_PER_SCANLINE;
+            Timings.H_Max = Timings.H_Max_Master;
+            Timings.HBlankStart = SNES_HBLANK_START_HC;
+            Timings.HBlankEnd = SNES_HBLANK_END_HC;
+            Timings.HDMAInit = SNES_HDMA_INIT_HC;
+            Timings.HDMAStart = SNES_HDMA_START_HC;
+            Timings.RenderPos = SNES_RENDER_START_HC;
+            Timings.V_Max_Master = Settings.PAL ? SNES_MAX_PAL_VCOUNTER : SNES_MAX_NTSC_VCOUNTER;
+            Timings.V_Max = Timings.V_Max_Master;
+            /* From byuu: The total delay time for both the initial (H)DMA sync (to the DMA clock),
+               and the end (H)DMA sync (back to the last CPU cycle's mcycle rate (6, 8, or 12)) always takes between 12-24 mcycles.
+               Possible delays: { 12, 14, 16, 18, 20, 22, 24 }
+               XXX: Snes9x can't emulate this timing :( so let's use the average value... */
+            Timings.DMACPUSync = 18;
+            /* If the CPU is halted (i.e. for DMA) while /NMI goes low, the NMI will trigger
+               after the DMA completes (even if /NMI goes high again before the DMA
+               completes). In this case, there is a 24-30 cycle delay between the end of DMA
+               and the NMI handler, time enough for an instruction or two. */
+            // Wild Guns, Mighty Morphin Power Rangers - The Fighting Edition
+            Timings.NMIDMADelay = 24;
+
+            IPPU.TotalEmulatedFrames = 0;
+
+            //// Hack games
+
+            ApplyROMFixes();
+
+            //// Show ROM information
+            char displayName[ROM_NAME_LEN];
+
+            strcpy(RawROMName, ROMName);
+            sprintf(displayName, "%s", SafeANK(ROMName));
+            sprintf(ROMName, "%s", Safe(ROMName));
+            sprintf(ROMId, "%s", Safe(ROMId));
+
+            sprintf(String, "\"%s\" [%s] %s, %s, %s, %s, SRAM:%s, ID:%s, CRC32:%08X",
+                displayName, isChecksumOK ? "checksum ok" : ((Multi.cartType == 4) ? "no checksum" : "bad checksum"),
+                MapType(), Size(), KartContents(), Settings.PAL ? "PAL" : "NTSC", StaticRAMSize(), ROMId, ROMCRC32);
+            S9xMessage(S9X_INFO, S9X_ROM_INFO, String);
+
+            Settings.ForceLoROM = FALSE;
+            Settings.ForceHiROM = FALSE;
+            Settings.ForceHeader = FALSE;
+            Settings.ForceNoHeader = FALSE;
+            Settings.ForceInterleaved = FALSE;
+            Settings.ForceInterleaved2 = FALSE;
+            Settings.ForceInterleaveGD24 = FALSE;
+            Settings.ForceNotInterleaved = FALSE;
+            Settings.ForcePAL = FALSE;
+            Settings.ForceNTSC = FALSE;
+
+            Settings.TakeScreenshot = FALSE;
+
+            if (stopMovie)
+                S9xMovieStop(TRUE);
+
+            if (PostRomInitFunc)
+                PostRomInitFunc();
+
+            S9xVerifyControllers();
         }
 
         private static int Reset()

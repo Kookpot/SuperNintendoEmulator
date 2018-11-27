@@ -43,11 +43,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="c65816.cs" />
+    <Compile Include="DSP\DSP.cs" />
     <Compile Include="GUI\GUI.cs" />
     <Compile Include="IPPU\Constants.cs" />
     <Compile Include="IPPU\IPPU.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="Memory\Constants.cs" />
+    <Compile Include="Memory\MappingType.cs" />
     <Compile Include="Memory\MapSector.cs" />
     <Compile Include="Memory\MapType.cs" />
     <Compile Include="Memory\Memory.cs" />
@@ -56,6 +58,8 @@
     <Compile Include="Screen\Constants.cs" />
     <Compile Include="Screen\Screen.cs" />
     <Compile Include="Settings\Settings.cs" />
+    <Compile Include="SFX\SuperFX.cs" />
+    <Compile Include="Timings\Timings.cs" />
     <Compile Include="Word.cs" />
   </ItemGroup>
   <ItemGroup />
