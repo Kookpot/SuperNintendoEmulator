@@ -1,4 +1,5 @@
 ﻿using SuperNintendo.Core.Memory;
+using SuperNintendo.Core.PPU;
 using System;
 
 namespace SuperNintendo.Core.CPU
@@ -447,7 +448,8 @@ namespace SuperNintendo.Core.CPU
             Registers.P.W &= (ushort)~f;
         }
 
-        public static bool CheckFlag(ushort f) {
+        public static bool CheckFlag(ushort f)
+        {
             return (Registers.PL & f) > 0;
         }
 
@@ -1114,8 +1116,8 @@ namespace SuperNintendo.Core.CPU
         private static void AddCycles(int n)
         {
             CPUState.Cycles += n;
-            //while (CPUState.Cycles >= CPUState.NextEvent)
-            //    DoHEventProcessing();
+            while (CPUState.Cycles >= CPUState.NextEvent)
+                DoHEventProcessing();
         }
 
         #region ADC
@@ -6841,7 +6843,7 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op64M1()
         {
-	        STZ8(Direct(AccessMode.WRITE));
+            STZ8(Direct(AccessMode.WRITE));
         }
 
         private static void Op74E1()
@@ -6871,7 +6873,7 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op64M0()
         {
-	        STZ16(Direct(AccessMode.WRITE), WrapType.WRAP_BANK);
+            STZ16(Direct(AccessMode.WRITE), WrapType.WRAP_BANK);
         }
 
         private static void Op74E0M0()
@@ -6896,9 +6898,9 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op64Slow()
         {
-	        if (CheckMemory() > 0)
+            if (CheckMemory() > 0)
                 STZ8(DirectSlow(AccessMode.WRITE));
-	        else
+            else
                 STZ16(DirectSlow(AccessMode.WRITE), WrapType.WRAP_BANK);
         }
 
@@ -6932,10 +6934,10 @@ namespace SuperNintendo.Core.CPU
 
         private static void TRB16(uint opAddress, WrapType w)
         {
-	        var work16 = Memory.Memory.GetWord(opAddress, w);
+            var work16 = Memory.Memory.GetWord(opAddress, w);
             ICPU._Zero = (byte)((work16 & Registers.A.W) != 0 ? 1 : 0);
-	        work16 &= (ushort)~Registers.A.W;
-	        AddCycles(Constants.ONE_CYCLE);
+            work16 &= (ushort)~Registers.A.W;
+            AddCycles(Constants.ONE_CYCLE);
             Memory.Memory.SetWord(work16, opAddress, w, WriteOrder.WRITE_10);
             Memory.Memory.OpenBus = (byte)(work16 & 0xff);
         }
@@ -6972,10 +6974,10 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op14Slow()
         {
-	        if (CheckMemory() > 0)
-		        TRB8(DirectSlow(AccessMode.MODIFY));
-	        else
-		        TRB16(DirectSlow(AccessMode.MODIFY), WrapType.WRAP_BANK);
+            if (CheckMemory() > 0)
+                TRB8(DirectSlow(AccessMode.MODIFY));
+            else
+                TRB16(DirectSlow(AccessMode.MODIFY), WrapType.WRAP_BANK);
         }
 
         private static void Op1CSlow()
@@ -7057,13 +7059,13 @@ namespace SuperNintendo.Core.CPU
                 W = (ushort)Relative(AccessMode.JUMP)
             };
             if (CheckCarry() == 0)
-	        {
-		        AddCycles(Constants.ONE_CYCLE);
-		        if ((Registers.PCw & ~Memory.Constants.MASK) != (newPC.W & ~Memory.Constants.MASK))
-			        Memory.Memory.SetPCBase(ICPU.ShiftedPB + newPC.W);
-		        else
-			        Registers.PCw = newPC.W;
-	        }
+            {
+                AddCycles(Constants.ONE_CYCLE);
+                if ((Registers.PCw & ~Memory.Constants.MASK) != (newPC.W & ~Memory.Constants.MASK))
+                    Memory.Memory.SetPCBase(ICPU.ShiftedPB + newPC.W);
+                else
+                    Registers.PCw = newPC.W;
+            }
         }
 
         private static void Op90E1()
@@ -7076,7 +7078,7 @@ namespace SuperNintendo.Core.CPU
             {
                 AddCycles(Constants.ONE_CYCLE);
                 if (Registers.PCh != newPC.High)
-			        AddCycles(Constants.ONE_CYCLE);
+                    AddCycles(Constants.ONE_CYCLE);
                 if ((Registers.PCw & ~Memory.Constants.MASK) != (newPC.W & ~Memory.Constants.MASK))
                     Memory.Memory.SetPCBase(ICPU.ShiftedPB + newPC.W);
                 else
@@ -7176,7 +7178,7 @@ namespace SuperNintendo.Core.CPU
             {
                 W = (ushort)Relative(AccessMode.JUMP)
             };
-            if (CheckZero()  != 0)
+            if (CheckZero() != 0)
             {
                 AddCycles(Constants.ONE_CYCLE);
                 if (Registers.PCh != newPC.High)
@@ -7716,14 +7718,14 @@ namespace SuperNintendo.Core.CPU
         private static void PushW(ushort w)
         {
             Memory.Memory.SetWord(w, (uint)(Registers.S.W - 1), WrapType.WRAP_BANK, WriteOrder.WRITE_10);
-        	Registers.S.W -= 2;
+            Registers.S.W -= 2;
         }
 
         private static void PushWE(ushort w)
         {
             Registers.SL--;
-        	Memory.Memory.SetWord(w, Registers.S.W, WrapType.WRAP_PAGE, WriteOrder.WRITE_10);
-        	Registers.SL--;
+            Memory.Memory.SetWord(w, Registers.S.W, WrapType.WRAP_PAGE, WriteOrder.WRITE_10);
+            Registers.SL--;
         }
 
         private static void PushB(byte b)
@@ -7734,11 +7736,11 @@ namespace SuperNintendo.Core.CPU
         private static void PushBE(byte b)
         {
             Memory.Memory.SetByte(b, Registers.S.W);
-        	Registers.SL--;
+            Registers.SL--;
         }
 
         // PEA
-       private static void OpF4E0()
+        private static void OpF4E0()
         {
             var val = (ushort)Absolute(AccessMode.NONE);
             PushW(val);
@@ -9346,143 +9348,145 @@ namespace SuperNintendo.Core.CPU
             }
         }
 
-     //   public static void DoHEventProcessing()
-     //   {
-	    //    switch (CPUState.WhichEvent)
-	    //    {
-		   //     case HCEvents.HC_HBLANK_START_EVENT:
-			  //      Reschedule();
-			  //      break;
-		   //     case HCEvents.HC_HDMA_START_EVENT:
-			  //      Reschedule();
-			  //      if (PPU.SPPU.HDMA > 0 && CPUState.V_Counter <= PPU.SPPU.ScreenHeight)
-			  //      {
-     //                   PPU.SPPU.HDMA = DMA.DMA.DoHDMA(PPU.SPPU.HDMA);
-     //               }
-			  //      break;
-		   //     case HCEvents.HC_HCOUNTER_MAX_EVENT:
-     //               APUEndScanline();
-     //               CPUState.Cycles -= Timings.Timings.H_Max;
-			  //      if (Timings.Timings.NMITriggerPos != 0xffff)
-				 //       Timings.Timings.NMITriggerPos -= Timings.Timings.H_Max;
-			  //      if (Timings.Timings.NextIRQTimer != 0x0fffffff)
-				 //       Timings.Timings.NextIRQTimer -= Timings.Timings.H_Max;
-			  //      APUSetReferenceTime(CPUState.Cycles);
+        public static void DoHEventProcessing()
+        {
+            switch (CPUState.WhichEvent)
+            {
+                case HCEvents.HC_HBLANK_START_EVENT:
+                    Reschedule();
+                    break;
+                case HCEvents.HC_HDMA_START_EVENT:
+                    Reschedule();
+                    //if (SPPU.HDMA > 0 && CPUState.V_Counter <= SPPU.ScreenHeight)
+                    //    SPPU.HDMA = DMA.DMA.DoHDMA(SPPU.HDMA);
+                    break;
+                case HCEvents.HC_HCOUNTER_MAX_EVENT:
+                    //Sound.Sound.APUEndScanline();
+                    CPUState.Cycles -= Timings.Timings.H_Max;
+                    if (Timings.Timings.NMITriggerPos != 0xffff)
+                        Timings.Timings.NMITriggerPos -= Timings.Timings.H_Max;
 
-     //               CPUState.V_Counter++;
-			  //      if (CPUState.V_Counter >= Timings.Timings.V_Max)	// V ranges from 0 to Timings.V_Max - 1
-			  //      {
-     //                   CPUState.V_Counter = 0;
-     //                   Timings.Timings.InterlaceField = !Timings.Timings.InterlaceField;
+                    if (Timings.Timings.NextIRQTimer != 0x0fffffff)
+                        Timings.Timings.NextIRQTimer -= Timings.Timings.H_Max;
 
-				 //       // From byuu:
-				 //       // [NTSC]
-				 //       // interlace mode has 525 scanlines: 263 on the even frame, and 262 on the odd.
-				 //       // non-interlace mode has 524 scanlines: 262 scanlines on both even and odd frames.
-				 //       // [PAL] <PAL info is unverified on hardware>
-				 //       // interlace mode has 625 scanlines: 313 on the even frame, and 312 on the odd.
-				 //       // non-interlace mode has 624 scanlines: 312 scanlines on both even and odd frames.
-				 //       if (IPPU.Interlace && !Timings.Timings.InterlaceField)
-     //                       Timings.Timings.V_Max = Timings.Timings.V_Max_Master + 1;	// 263 (NTSC), 313?(PAL)
-				 //       else
-     //                       Timings.Timings.V_Max = Timings.Timings.V_Max_Master;		// 262 (NTSC), 312?(PAL)
+                    //APUSetReferenceTime(CPUState.Cycles);
 
-     //                   Memory.Memory.ROM[Memory.Memory.FillRAMPosition + 0x213F] ^= 0x80;
-				 //       PPU.RangeTimeOver = 0;
+                    CPUState.V_Counter++;
+                    if (CPUState.V_Counter >= Timings.Timings.V_Max)    // V ranges from 0 to Timings.V_Max - 1
+                    {
+                        CPUState.V_Counter = 0;
+                        Timings.Timings.InterlaceField = !Timings.Timings.InterlaceField;
 
-     //                   // FIXME: reading $4210 will wait 2 cycles, then perform reading, then wait 4 more cycles.
-     //                   Memory.Memory.ROM[Memory.Memory.FillRAMPosition + 0x4210] = Model->_5A22;
+                        // From byuu:
+                        // [NTSC]
+                        // interlace mode has 525 scanlines: 263 on the even frame, and 262 on the odd.
+                        // non-interlace mode has 524 scanlines: 262 scanlines on both even and odd frames.
+                        // [PAL] <PAL info is unverified on hardware>
+                        // interlace mode has 625 scanlines: 313 on the even frame, and 312 on the odd.
+                        // non-interlace mode has 624 scanlines: 312 scanlines on both even and odd frames.
+                        if (IPPU.Interlace && !Timings.Timings.InterlaceField)
+                            Timings.Timings.V_Max = Timings.Timings.V_Max_Master + 1;   // 263 (NTSC), 313?(PAL)
+                        else
+                            Timings.Timings.V_Max = Timings.Timings.V_Max_Master;		// 262 (NTSC), 312?(PAL)
 
-				 //       ICPU.Frame++;
-				 //       PPU.HVBeamCounterLatched = 0;
-			  //      }
+                        Memory.Memory.FillRAM[0x213F] ^= 0x80;
+                        SPPU.RangeTimeOver = 0;
 
-			  //      // From byuu:
-			  //      // In non-interlace mode, there are 341 dots per scanline, and 262 scanlines per frame.
-			  //      // On odd frames, scanline 240 is one dot short.
-			  //      // In interlace mode, there are always 341 dots per scanline. Even frames have 263 scanlines,
-			  //      // and odd frames have 262 scanlines.
-			  //      // Interlace mode scanline 240 on odd frames is not missing a dot.
-			  //      if (CPU.V_Counter == 240 && !IPPU.Interlace && Timings.InterlaceField)	// V=240
-				 //       Timings.H_Max = Timings.H_Max_Master - ONE_DOT_CYCLE;	// HC=1360
-			  //      else
-				 //       Timings.H_Max = Timings.H_Max_Master;					// HC=1364
+                        // FIXME: reading $4210 will wait 2 cycles, then perform reading, then wait 4 more cycles.
+                        Memory.Memory.FillRAM[0x4210] = SnesModel._5A22;
 
-			  //      if (Model->_5A22 == 2)
-			  //      {
-				 //       if (CPU.V_Counter != 240 || IPPU.Interlace || !Timings.InterlaceField)	// V=240
-				 //       {
-					//        if (Timings.WRAMRefreshPos == SNES_WRAM_REFRESH_HC_v2 - ONE_DOT_CYCLE)	// HC=534
-					//	        Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v2;					// HC=538
-					//        else
-					//	        Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v2 - ONE_DOT_CYCLE;	// HC=534
-				 //       }
-			  //      }
-			  //      else
-				 //       Timings.WRAMRefreshPos = SNES_WRAM_REFRESH_HC_v1;
+                        ICPU.Frame++;
+                        SPPU.HVBeamCounterLatched = 0;
+                    }
 
-			  //      if (CPU.V_Counter == PPU.ScreenHeight + FIRST_VISIBLE_LINE)	// VBlank starts from V=225(240).
-			  //      {
-				 //       S9xEndScreenRefresh();
+                    // From byuu:
+                    // In non-interlace mode, there are 341 dots per scanline, and 262 scanlines per frame.
+                    // On odd frames, scanline 240 is one dot short.
+                    // In interlace mode, there are always 341 dots per scanline. Even frames have 263 scanlines,
+                    // and odd frames have 262 scanlines.
+                    // Interlace mode scanline 240 on odd frames is not missing a dot.
+                    if (CPUState.V_Counter == 240 && !IPPU.Interlace && Timings.Timings.InterlaceField)  // V=240
+                        Timings.Timings.H_Max = Timings.Timings.H_Max_Master - Memory.Constants.ONE_DOT_CYCLE;   // HC=1360
+                    else
+                        Timings.Timings.H_Max = Timings.Timings.H_Max_Master;                   // HC=1364
 
-     //   CPU.Flags |= SCAN_KEYS_FLAG;
+                    if (SnesModel._5A22 == 2)
+                    {
+                        if (CPUState.V_Counter != 240 || IPPU.Interlace || !Timings.Timings.InterlaceField)  // V=240
+                        {
+                            if (Timings.Timings.WRAMRefreshPos == Constants.SNES_WRAM_REFRESH_HC_v2 - Memory.Constants.ONE_DOT_CYCLE)  // HC=534
+                                Timings.Timings.WRAMRefreshPos = Constants.SNES_WRAM_REFRESH_HC_v2;                   // HC=538
+                            else
+                                Timings.Timings.WRAMRefreshPos = Constants.SNES_WRAM_REFRESH_HC_v2 - Memory.Constants.ONE_DOT_CYCLE;   // HC=534
+                        }
+                    }
+                    else
+                        Timings.Timings.WRAMRefreshPos = Constants.SNES_WRAM_REFRESH_HC_v1;
 
-				 //       PPU.HDMA = 0;
-				 //       // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
-				 //       IPPU.MaxBrightness = PPU.Brightness;
-				 //       PPU.ForcedBlanking = (Memory.FillRAM[0x2100] >> 7) & 1;
+                    if (CPUState.V_Counter == SPPU.ScreenHeight + PPU.Constants.FIRST_VISIBLE_LINE) // VBlank starts from V=225(240).
+                    {
+                        //EndScreenRefresh();
 
-				 //       if (!PPU.ForcedBlanking)
-				 //       {
-					//        PPU.OAMAddr = PPU.SavedOAMAddr;
+                        CPUState.Flags |= Constants.SCAN_KEYS_FLAG;
 
-					//        uint8 tmp = 0;
+                        SPPU.HDMA = 0;
+                        // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
+                        IPPU.MaxBrightness = SPPU.Brightness;
+                        SPPU.ForcedBlanking = ((Memory.Memory.FillRAM[0x2100] >> 7) & 1) > 0;
 
-					//        if (PPU.OAMPriorityRotation)
-     //                           tmp = (PPU.OAMAddr & 0xFE) >> 1;
-					//        if ((PPU.OAMFlip & 1) || PPU.FirstSprite != tmp)
-					//        {
-					//	        PPU.FirstSprite = tmp;
-					//	        IPPU.OBJChanged = TRUE;
-					//        }
+                        if (!SPPU.ForcedBlanking)
+                        {
+                            SPPU.OAMAddr = SPPU.SavedOAMAddr;
 
-					//        PPU.OAMFlip = 0;
-				 //       }
+                            byte tmp = 0;
 
-				 //       // FIXME: writing to $4210 will wait 6 cycles.
-				 //       Memory.Memory.RAM[.FillRAM[0x4210] = 0x80 | Model->_5A22;
-				 //       if (Memory.FillRAM[0x4200] & 0x80)
-				 //       {
+                            if (SPPU.OAMPriorityRotation > 0)
+                                tmp = (byte)((SPPU.OAMAddr & 0xFE) >> 1);
 
-     //                       // FIXME: triggered at HC=6, checked just before the final CPU cycle,
-     //                       // then, when to call S9xOpcode_NMI()?
-     //                       CPUState.NMIPending = true;
-					//        Timings.NMITriggerPos = 6 + 6;
-				 //       }
-			  //      }
+                            if ((SPPU.OAMFlip & 1) > 0 || SPPU.FirstSprite != tmp)
+                            {
+                                SPPU.FirstSprite = tmp;
+                                IPPU.OBJChanged = true;
+                            }
 
-			  //      if (CPU.V_Counter == FIRST_VISIBLE_LINE)	// V=1
-				 //       StartScreenRefresh();
+                            SPPU.OAMFlip = 0;
+                        }
 
-     //               Reschedule();
-			  //      break;
-		   // case (int)HCEvents.HC_HDMA_INIT_EVENT:
-			  //  Reschedule();
-			  //  if (CPUState.V_Counter == 0)
-     //               StartHDMA();
+                        // FIXME: writing to $4210 will wait 6 cycles.
+                        Memory.Memory.FillRAM[0x4210] = (byte)(0x80 | SnesModel._5A22);
+                        if ((Memory.Memory.FillRAM[0x4200] & 0x80) > 0)
+                        {
 
-			  //  break;
-		   // case (int)HCEvents.HC_RENDER_EVENT:
-			  //  if (CPUState.V_Counter >= FIRST_VISIBLE_LINE && CPUState.V_Counter <= PPU.ScreenHeight)
-				 //   RenderLine((byte) (CPUState.V_Counter - FIRST_VISIBLE_LINE));
+                            // FIXME: triggered at HC=6, checked just before the final CPU cycle,
+                            // then, when to call S9xOpcode_NMI()?
+                            CPUState.NMIPending = true;
+                            Timings.Timings.NMITriggerPos = 6 + 6;
+                        }
+                    }
 
-			  //  Reschedule();
-			  //  break;
+                    //if (CPUState.V_Counter == PPU.Constants.FIRST_VISIBLE_LINE)    // V=1
+                    //    StartScreenRefresh();
 
-		   // case (int) HCEvents.HC_WRAM_REFRESH_EVENT:
-     //           CPUState.Cycles += SNES_WRAM_REFRESH_CYCLES;
-			  //  Reschedule();
-			  //  break;
-	    //}
+                    Reschedule();
+                    break;
+                case HCEvents.HC_HDMA_INIT_EVENT:
+                    Reschedule();
+                    //if (CPUState.V_Counter == 0)
+                    //    StartHDMA();
+
+                    break;
+                case HCEvents.HC_RENDER_EVENT:
+                    //if (CPUState.V_Counter >= PPU.Constants.FIRST_VISIBLE_LINE && CPUState.V_Counter <= SPPU.ScreenHeight)
+                    //    RenderLine((byte)(CPUState.V_Counter - PPU.Constants.FIRST_VISIBLE_LINE));
+
+                    Reschedule();
+                    break;
+
+                case HCEvents.HC_WRAM_REFRESH_EVENT:
+                    CPUState.Cycles += Constants.SNES_WRAM_REFRESH_CYCLES;
+                    Reschedule();
+                    break;
+            }
+        }
     }
 }

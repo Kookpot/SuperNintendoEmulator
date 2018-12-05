@@ -59,7 +59,7 @@ namespace SuperNintendo.Core.Memory
             ClearSRAM();
             var size = SRAMSize > 0 ? (1 << (SRAMSize + 3)) * 128 : 0;
             var fileInfo = new System.IO.FileInfo(fileName);
-            if (fileInfo != null)
+            if (fileInfo.Exists)
             {
                 var len = fileInfo.OpenRead().Read(RAM.bytes, 0, 0x20000);
                 //if (len - size == 512)
@@ -1178,8 +1178,8 @@ namespace SuperNintendo.Core.Memory
             if (!CPU.CPUState.InDMAorHDMA)
             {
                 CPU.CPUState.Cycles += speed;
-                //while (CPU.CPUState.Cycles >= CPU.CPUState.NextEvent)
-                //    CPU.CPU.DoHEventProcessing();
+                while (CPU.CPUState.Cycles >= CPU.CPUState.NextEvent)
+                    CPU.CPU.DoHEventProcessing();
             }
         }
 
@@ -1188,8 +1188,8 @@ namespace SuperNintendo.Core.Memory
             if (!CPU.CPUState.InDMAorHDMA)
             {
                 CPU.CPUState.Cycles += speed << 1;
-                //while (CPU.CPUState.Cycles >= CPU.CPUState.NextEvent)
-                //    CPU.CPU.DoHEventProcessing();
+                while (CPU.CPUState.Cycles >= CPU.CPUState.NextEvent)
+                    CPU.CPU.DoHEventProcessing();
             }
         }
 

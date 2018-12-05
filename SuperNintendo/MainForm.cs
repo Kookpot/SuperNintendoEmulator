@@ -41,8 +41,6 @@ namespace SuperNintendo
             //GUI.FrameTimerSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
             //GUI.ServerTimerSemaphore = CreateSemaphore(NULL, 0, 10, NULL);
 
-            //SetupDefaultKeymap();
-
             //DWORD lastTime = timeGetTime();
 
             //MSG msg;
@@ -114,7 +112,7 @@ namespace SuperNintendo
                             Registers.PCw++;
                             CPUState.Cycles += Core.CPU.Constants.TWO_CYCLES + Core.Memory.Constants.ONE_DOT_CYCLE / 2;
                             while (CPUState.Cycles >= CPUState.NextEvent)
-                                DoHEventProcessing();
+                                CPU.DoHEventProcessing();
                         }
 
                         CheckForIRQChange();
@@ -137,10 +135,10 @@ namespace SuperNintendo
                         Registers.PCw++;
                         CPUState.Cycles += Core.CPU.Constants.TWO_CYCLES + Core.Memory.Constants.ONE_DOT_CYCLE / 2;
                         while (CPUState.Cycles >= CPUState.NextEvent)
-                            DoHEventProcessing();
+                            CPU.DoHEventProcessing();
                     }
 
-                    if (!CPU.CheckFlag(IRQ))
+                    if (!CPU.CheckFlag(Core.CPU.Constants.IRQ))
                     {
                         /* The flag pushed onto the stack is the new value */
                         CheckForIRQChange();
@@ -151,50 +149,37 @@ namespace SuperNintendo
                 /* Change IRQ flag for instructions that set it only on last cycle */
                 CheckForIRQChange();
 
-                VBlank = false;
-                for (var scanline = 0; scanline <= 261; scanline++)
-                {
-                    CurrentLine = scanline;
-                    HBlank = false;
-                    if (!_waiDisable && !STPDisable)
-                    {
-                        if (_ioPort.IRQEnable == 2 && scanline == _ioPort.VCount)
-                        {
-                            IRQ();
-                        }
-                        Execute65816(CyclesPerScanline - HBlankCycles);
-                        HBlank = true;
-                        _ioPort.HBlankDMA(scanline);
-                        if ((_ioPort.IRQEnable == 3 && scanline == _ioPort.VCount) || (_ioPort.IRQEnable == 1))
-                        {
-                            IRQ();
-                        }
-                        Execute65816(HBlankCycles);
-                    }
-                    if (scanline < 224)
-                    {
-                        _ppu.RenderScanline(scanline);
-                    }
-                    else
-                    {
-                        switch (scanline)
-                        {
-                            case 224:
-                                _ioPort.ControllerReady = true;
-                                _ppu.ObjRAMAddress = _ppu.ObjRAMFirstAddress;
-                                VBlank = true;
-                                if (_ioPort.NMIEnable) { NMI(); }
-                                break;
-                            case 227:
-                                _ioPort.ControllerReady = false;
-                                break;
-                        }
-                    }
-                }
-                _ppu.Blit();
-                if (_fps.LimitFPS) { _fps.LockFramerate(60); }
-                _form.Text = _fps.GetFPS();
-                System.Windows.Forms.Application.DoEvents();
+                if ((CPUState.Flags & Core.CPU.Constants.SCAN_KEYS_FLAG) > 0)
+                    break;
+
+                byte op;
+                Action[] Opcodes;
+
+		        if (CPUState.PCBase != null)
+		        {
+			        op = CPUState.PCBase[Registers.PCw];
+			        CPUState.Cycles += CPUState.MemSpeed;
+			        Opcodes = ICPU.Opcodes;
+		        }
+		        else
+		        {
+			        op = Memory.GetByte(Registers.PBPC);
+                    Memory.OpenBus = op;
+			        Opcodes = CPU.OpcodesSlow;
+		        }
+
+		        if ((Registers.PCw & Core.Memory.Constants.MASK) + ICPU.OpLengths[op] >= Core.Memory.Constants.BLOCK_SIZE)
+		        {
+			        MappingData oldPCBase = CPUState.PCBase;
+
+                    CPUState.PCBase = new MappingData { MemoryLink = Memory.GetBasePointer(ICPU.ShiftedPB + ((ushort)(Registers.PCw + 4))) };
+			        if (oldPCBase != CPUState.PCBase || (Registers.PCw & ~Core.Memory.Constants.MASK) == (0xffff & ~Core.Memory.Constants.MASK))
+				        Opcodes = CPU.OpcodesSlow;
+		        }
+
+		        Registers.PCw++;
+		        Opcodes[op]();
+                Application.DoEvents();
             }
         }
 
