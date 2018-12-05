@@ -1,0 +1,10 @@
+.vs/
+.vscode/
+bin/
+obj/
+*/launchSettings.json
+*.log
+PublishProfiles/
+*.local
+*~
+*.user
