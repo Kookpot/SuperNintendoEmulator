@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Windows.Forms;
+using SuperNintendo.Core.GFX;
 using SuperNintendo.Core.Memory;
 
 namespace SuperNintendo
 {
     public partial class MainForm : Form
     {
-        #region Constructors
-
         public MainForm()
         {
             InitializeComponent();
             InitSnes();
         }
-
-        #endregion
-
-        #region Private Methods
 
         private void InitSnes()
         {
@@ -101,23 +96,8 @@ namespace SuperNintendo
 
         private void PostRomInit()
         {
-            //Settings.TurboMode = FALSE;
-            //GUI.superscope_turbo = 0;
-            //GUI.superscope_pause = 0;
-            //GUI.MouseButtons = 0;
-            //GUI.MouseX = 0;
-            //GUI.MouseY = 0;
-            //GUI.TurboMask = 0;
-            //GUI.FrameAdvanceJustPressed = 0;
-
-            //// black out the screen
-            //for (uint32 y = 0; y < (uint32)IPPU.RenderedScreenHeight; y++)
-            //    memset(GFX.Screen + y * GFX.RealPPL, 0, GFX.RealPPL * 2);
+            GFX.Screen = new ushort[Core.PPU.IPPU.RenderedScreenHeight]; //might be reference....
         }
-
-        #endregion
-
-        #region Event Handlers
 
         private void OpenToolStripMenuItem_Click(Object sender, EventArgs e)
         {
@@ -127,10 +107,7 @@ namespace SuperNintendo
                 Memory.LoadROM(openRomFileDialog.OpenFile());
                 //InitSound();
                 //ResetFrameTimer();
-                //Memory.LoadSRAM($"{new System.IO.FileInfo(openRomFileDialog.FileName).Name}.srm");
             }
         }
-
-        #endregion
     }
 }

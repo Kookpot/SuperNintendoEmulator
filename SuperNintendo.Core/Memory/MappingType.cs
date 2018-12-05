@@ -21,6 +21,8 @@
         MAP_SETA_RISC,
         MAP_BSX,
         MAP_NONE,
-        MAP_LAST
+        MAP_LAST,
+        MAP_ROM,
+        MAP_RAM
     };
 }

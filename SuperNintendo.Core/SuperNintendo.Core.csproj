@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SlimDX, Version=4.0.13.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
+      <HintPath>..\packages\SlimDX.4.0.13.44\lib\NET40\SlimDX.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -42,27 +45,59 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="c65816.cs" />
+    <Compile Include="CPU\AccessMode.cs" />
+    <Compile Include="CPU\Constants.cs" />
+    <Compile Include="CPU\CPU.cs" />
+    <Compile Include="CPU\CPUState.cs" />
+    <Compile Include="CPU\HCEvents.cs" />
+    <Compile Include="CPU\IRQ.cs" />
+    <Compile Include="CPU\Pair.cs" />
+    <Compile Include="CPU\ProgramCounter.cs" />
+    <Compile Include="CPU\Registers.cs" />
+    <Compile Include="CPU\ICPU.cs" />
+    <Compile Include="DMA\DMA.cs" />
+    <Compile Include="DMA\SDMA.cs" />
     <Compile Include="DSP\DSP.cs" />
+    <Compile Include="GFX\GFX.cs" />
     <Compile Include="GUI\GUI.cs" />
-    <Compile Include="IPPU\Constants.cs" />
-    <Compile Include="IPPU\IPPU.cs" />
-    <Compile Include="Loader.cs" />
+    <Compile Include="Memory\IsMemoryLinked.cs" />
+    <Compile Include="Memory\MemorySet.cs" />
+    <Compile Include="Memory\DirectMemorySetLink.cs" />
+    <Compile Include="Memory\MemorySetLink.cs" />
+    <Compile Include="Memory\WrapType.cs" />
+    <Compile Include="Memory\WriteOrder.cs" />
+    <Compile Include="PPU\BackGround.cs" />
+    <Compile Include="PPU\ClipData.cs" />
+    <Compile Include="PPU\ClippingType.cs" />
+    <Compile Include="PPU\Constants.cs" />
+    <Compile Include="PPU\IPPU.cs" />
     <Compile Include="Memory\Constants.cs" />
+    <Compile Include="Memory\MappingData.cs" />
     <Compile Include="Memory\MappingType.cs" />
     <Compile Include="Memory\MapSector.cs" />
     <Compile Include="Memory\MapType.cs" />
     <Compile Include="Memory\Memory.cs" />
-    <Compile Include="Memory\SMulti.cs" />
+    <Compile Include="PPU\ScreenObject.cs" />
+    <Compile Include="PPU\SnesModel.cs" />
+    <Compile Include="PPU\SPPU.cs" />
+    <Compile Include="PPU\VMA.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Screen\Constants.cs" />
     <Compile Include="Screen\Screen.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="SFX\SuperFX.cs" />
+    <Compile Include="Sound\Constants.cs" />
+    <Compile Include="Sound\HermiteResampler.cs" />
+    <Compile Include="Sound\MSU.cs" />
+    <Compile Include="Sound\Resampler.cs" />
+    <Compile Include="Sound\Sound.cs" />
+    <Compile Include="Sound\SPC.cs" />
     <Compile Include="Timings\Timings.cs" />
-    <Compile Include="Word.cs" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
