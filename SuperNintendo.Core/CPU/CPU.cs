@@ -447,7 +447,7 @@ namespace SuperNintendo.Core.CPU
             Registers.P.W &= (ushort)~f;
         }
 
-        private static bool CheckFlag(ushort f) {
+        public static bool CheckFlag(ushort f) {
             return (Registers.PL & f) > 0;
         }
 
@@ -471,12 +471,12 @@ namespace SuperNintendo.Core.CPU
             ICPU._Zero = 1;
         }
 
-        private static void SetIRQ()
+        public static void SetIRQ()
         {
             Registers.PL |= Constants.IRQ;
         }
 
-        private static void ClearIRQ()
+        public static void ClearIRQ()
         {
             Registers.PL &= (byte)~Constants.IRQ;
         }
@@ -8647,7 +8647,7 @@ namespace SuperNintendo.Core.CPU
 
         #region IRQ
 
-        private static void OpcodeIRQ()
+        public static void OpcodeIRQ()
         {
             // IRQ and NMI do an opcode fetch as their first "IO" cycle.
             AddCycles(CPUState.MemSpeed + Constants.ONE_CYCLE);
@@ -8703,7 +8703,7 @@ namespace SuperNintendo.Core.CPU
 
         #region NMI
 
-        private static void OpcodeNMI()
+        public static void OpcodeNMI()
         {
             // IRQ and NMI do an opcode fetch as their first "IO" cycle.
             AddCycles(CPUState.MemSpeed + Constants.ONE_CYCLE);

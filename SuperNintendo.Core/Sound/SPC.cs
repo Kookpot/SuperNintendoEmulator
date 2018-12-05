@@ -5,6 +5,7 @@ namespace SuperNintendo.Core.Sound
     public static class SPC
     {
         public static Action sa_callback;
+        public static Action extra_data;
 
         public static bool sound_in_sync = true;
         public static bool sound_enabled = false;
@@ -16,7 +17,7 @@ namespace SuperNintendo.Core.Sound
         public static byte[] landing_buffer;
         public static byte[] shrink_buffer;
 
-        //static Resampler* resampler = NULL;
+        public static Resampler resampler;
 
         public static int reference_time;
         public static uint remainder;

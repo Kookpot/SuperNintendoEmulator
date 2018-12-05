@@ -15,7 +15,7 @@ namespace SuperNintendo.Core.Memory
         private static byte ROMSpeed;
         private static byte ROMType;
         private static byte ROMSize;
-        private static byte SRAMSize;
+        private static byte SRAMSize = 3;
         private static uint SRAMMask;
 
         private static MappingData[] Map = new MappingData[Constants.NUM_BLOCKS];
@@ -52,6 +52,25 @@ namespace SuperNintendo.Core.Memory
             //SuperFX.pvRomPosition = 0; //link to ROM
 
             PostRomInitFunc = null;
+        }
+
+        public static void LoadSRAM(string fileName)
+        {
+            ClearSRAM();
+            var size = SRAMSize > 0 ? (1 << (SRAMSize + 3)) * 128 : 0;
+            var fileInfo = new System.IO.FileInfo(fileName);
+            if (fileInfo != null)
+            {
+                var len = fileInfo.OpenRead().Read(RAM.bytes, 0, 0x20000);
+                //if (len - size == 512)
+                //    Array.Copy(SRAM, SRAM + 512, size);
+            }
+        }
+
+        private static void ClearSRAM()
+        {
+            for (var i = 0; i < 0x20000; i++)
+                SRAM.bytes[i] = 96;
         }
 
         public static IsMemoryLinked GetBasePointer(uint address)

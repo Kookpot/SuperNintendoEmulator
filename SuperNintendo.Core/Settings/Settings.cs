@@ -21,5 +21,6 @@
         public static uint FrameTimePAL = 20000;
         public static uint FrameTimeNTSC = 16667;
         public static uint FrameTime;
+        public static bool StopEmulation;
     }
 }

@@ -111,6 +111,92 @@
             M7byte = 0;
         }
 
+        public static void UpdateIRQPositions(bool initial)
+        {
+            HTimerPosition = (short)(IRQHBeamPos * Memory.Constants.ONE_DOT_CYCLE + Timings.Timings.IRQTriggerCycles);
+            HTimerPosition -= (short)(IRQHBeamPos > 0 ? 0 : Memory.Constants.ONE_DOT_CYCLE);
+            HTimerPosition += (short)(IRQHBeamPos > 322 ? (Memory.Constants.ONE_DOT_CYCLE / 2) : 0);
+            HTimerPosition += (short)(IRQHBeamPos > 326 ? (Memory.Constants.ONE_DOT_CYCLE / 2) : 0);
+            VTimerPosition = (short)IRQVBeamPos;
+
+            if (VTimerEnabled && (VTimerPosition >= (Timings.Timings.V_Max + (IPPU.Interlace ? 1 : 0))))
+                Timings.Timings.NextIRQTimer = 0x0fffffff;
+            else if (!HTimerEnabled && !VTimerEnabled)
+                Timings.Timings.NextIRQTimer = 0x0fffffff;
+            else if (HTimerEnabled && !VTimerEnabled)
+            {
+                var v_pos = CPU.CPUState.V_Counter;
+                Timings.Timings.NextIRQTimer = HTimerPosition;
+                if (CPU.CPUState.Cycles > Timings.Timings.NextIRQTimer - Timings.Timings.IRQTriggerCycles)
+                {
+                    Timings.Timings.NextIRQTimer += Timings.Timings.H_Max;
+                    v_pos++;
+                }
+
+                // Check for short dot scanline
+                if (v_pos == 240 && Timings.Timings.InterlaceField && !IPPU.Interlace)
+                {
+                    Timings.Timings.NextIRQTimer -= IRQHBeamPos <= 322 ? Memory.Constants.ONE_DOT_CYCLE / 2 : 0;
+                    Timings.Timings.NextIRQTimer -= IRQHBeamPos <= 326 ? Memory.Constants.ONE_DOT_CYCLE / 2 : 0;
+                }
+            }
+            else if (!HTimerEnabled && VTimerEnabled)
+            {
+                if (CPU.CPUState.V_Counter == VTimerPosition && initial)
+                    Timings.Timings.NextIRQTimer = CPU.CPUState.Cycles + Timings.Timings.IRQTriggerCycles - Memory.Constants.ONE_DOT_CYCLE;
+                else
+                    Timings.Timings.NextIRQTimer = CyclesUntilNext(Timings.Timings.IRQTriggerCycles - Memory.Constants.ONE_DOT_CYCLE, VTimerPosition);
+            }
+            else
+            {
+                Timings.Timings.NextIRQTimer = CyclesUntilNext(HTimerPosition, VTimerPosition);
+
+                // Check for short dot scanline
+                var field = Timings.Timings.InterlaceField;
+
+                if (VTimerPosition < CPU.CPUState.V_Counter || (VTimerPosition == CPU.CPUState.V_Counter && Timings.Timings.NextIRQTimer > Timings.Timings.H_Max))
+                    field = !field;
+
+                if (VTimerPosition == 240 && field && !IPPU.Interlace)
+                {
+                    Timings.Timings.NextIRQTimer -= IRQHBeamPos <= 322 ? Memory.Constants.ONE_DOT_CYCLE / 2 : 0;
+                    Timings.Timings.NextIRQTimer -= IRQHBeamPos <= 326 ? Memory.Constants.ONE_DOT_CYCLE / 2 : 0;
+                }
+            }
+        }
+
+        private static int CyclesUntilNext(int hc, int vc)
+        {
+            var total = 0;
+            int vpos = CPU.CPUState.V_Counter;
+
+            if (vc - vpos > 0)
+            {
+                // It's still in this frame */
+                // Add number of lines
+                total += (vc - vpos) * Timings.Timings.H_Max_Master;
+                // If line 240 is in there and we're odd, subtract a dot
+                if (vpos <= 240 && vc > 240 && Timings.Timings.InterlaceField & !IPPU.Interlace)
+                    total -= Memory.Constants.ONE_DOT_CYCLE;
+            }
+            else
+            {
+                if (vc == vpos && (hc > CPU.CPUState.Cycles))
+                    return hc;
+
+                total += (Timings.Timings.V_Max - vpos) * Timings.Timings.H_Max_Master;
+                if (vpos <= 240 && Timings.Timings.InterlaceField && !IPPU.Interlace)
+                    total -= Memory.Constants.ONE_DOT_CYCLE;
+
+                total += (vc) * Timings.Timings.H_Max_Master;
+                if (vc > 240 && !Timings.Timings.InterlaceField && !IPPU.Interlace)
+                    total -= Memory.Constants.ONE_DOT_CYCLE;
+            }
+
+            total += hc;
+            return total;
+        }
+
         public static void SetPPU(byte value, ushort address)
         {
             // MAP_PPU: $2000-$3FFF

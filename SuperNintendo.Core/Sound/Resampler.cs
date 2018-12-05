@@ -1,39 +1,30 @@
 ﻿namespace SuperNintendo.Core.Sound
 {
-    public class Resampler
+    public class Resampler : RingBuffer
     {
-        protected bool push(short[] src, int num_samples)
+        public Resampler(int sizeOfBuffer) : base(sizeOfBuffer) { }
+
+        public bool Push(short[] src, int numberOfSamples)
         {
-            if (max_write() < num_samples)
+            if (MaxWrite() < numberOfSamples)
                 return false;
 
-            !num_samples || ring_buffer::push((unsigned char *) src, num_samples << 1);
+            if (numberOfSamples != 0)
+                Push(src, numberOfSamples << 1);
 
             return true;
         }
 
-        inline int
-        space_empty(void) const
+        protected int MaxWrite()
         {
-            return buffer_size - size;
+            return SpaceAvailable() >> 1;
         }
 
-    inline int
-    space_filled(void) const
+        public override void Resize(int numberOfSamples)
         {
-            return size;
+            base.Resize(numberOfSamples << 1);
         }
 
-inline int
-max_write(void) const
-        {
-            return space_empty() >> 1;
-        }
-
-        inline void
-        resize(int num_samples)
-{
-    ring_buffer::resize(num_samples << 1);
-}
+        public virtual void SetTimeRatio(double ratio) { }
     }
 }

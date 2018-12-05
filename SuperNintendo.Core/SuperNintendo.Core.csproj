@@ -90,8 +90,12 @@
     <Compile Include="Sound\HermiteResampler.cs" />
     <Compile Include="Sound\MSU.cs" />
     <Compile Include="Sound\Resampler.cs" />
+    <Compile Include="Sound\RingBuffer.cs" />
+    <Compile Include="Sound\SMSUCommand.cs" />
+    <Compile Include="Sound\SMSUFlag.cs" />
     <Compile Include="Sound\Sound.cs" />
     <Compile Include="Sound\SPC.cs" />
+    <Compile Include="Sound\SPC_DSP.cs" />
     <Compile Include="Timings\Timings.cs" />
   </ItemGroup>
   <ItemGroup />

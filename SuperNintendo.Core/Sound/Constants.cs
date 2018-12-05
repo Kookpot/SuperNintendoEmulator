@@ -10,5 +10,8 @@
         public const int APU_NUMERATOR_PAL = 34176;
         public const int APU_DENOMINATOR_PAL = 709379;
         public const int SoundBufferSize = 64;
+        public const int MSU1_REVISION = 0x02;
+        public const int SoundInputRate = 31950;
+        public const int SoundPlaybackRate = 44100;
     }
 }
