@@ -662,7 +662,7 @@ namespace SuperNintendo.Core.CPU
 
         private static ushort Immediate16(AccessMode a)
         {
-            var val = (ushort)((CPUState.PCBase[Registers.PCw] << 8) | CPUState.PCBase[Registers.PCw + 1]);
+            var val = (ushort)((CPUState.PCBase[Registers.PCw]) | CPUState.PCBase[Registers.PCw + 1] << 8);
             if ((a & AccessMode.READ) > 0)
                 Memory.Memory.OpenBus = (byte)(val >> 8);
 
@@ -792,7 +792,7 @@ namespace SuperNintendo.Core.CPU
 
         private static uint AbsoluteLong(AccessMode a)                     // l
         {
-            uint addr = (uint)(CPUState.PCBase[Registers.PCw] << 16 | CPUState.PCBase[Registers.PCw + 1] << 8 | CPUState.PCBase[Registers.PCw + 2]);
+            uint addr = (uint)(CPUState.PCBase[Registers.PCw] | CPUState.PCBase[Registers.PCw + 1] << 8 | CPUState.PCBase[Registers.PCw + 2] << 16);
             AddCycles(CPUState.MemSpeedx2 + CPUState.MemSpeed);
             if ((a & AccessMode.READ) > 0)
                 Memory.Memory.OpenBus = (byte)(addr >> 16);
@@ -7564,7 +7564,8 @@ namespace SuperNintendo.Core.CPU
         private static void Op78()
         {
             AddCycles(Constants.ONE_CYCLE);
-            SetIRQ();
+            Timings.Timings.IRQFlagChanging = IRQ.IRQ_SET_FLAG;
+            //SetIRQ();
         }
 
         // CLV
@@ -8922,7 +8923,7 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op20E1()
         {
-            var addr = Absolute(AccessMode.JSR);
+            var addr = (ushort)Absolute(AccessMode.JSR);
             AddCycles(Constants.ONE_CYCLE);
             PushWE((ushort)(Registers.PCw - 1));
             Memory.Memory.SetPCBase(ICPU.ShiftedPB + addr);
@@ -8930,7 +8931,7 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op20E0()
         {
-            var addr = Absolute(AccessMode.JSR);
+            var addr = (ushort)Absolute(AccessMode.JSR);
             AddCycles(Constants.ONE_CYCLE);
             PushW((ushort)(Registers.PCw - 1));
             Memory.Memory.SetPCBase(ICPU.ShiftedPB + addr);
@@ -8938,7 +8939,7 @@ namespace SuperNintendo.Core.CPU
 
         private static void Op20Slow()
         {
-            var addr = AbsoluteSlow(AccessMode.JSR);
+            var addr = (ushort)AbsoluteSlow(AccessMode.JSR);
             AddCycles(Constants.ONE_CYCLE);
             if (CheckEmulation() > 0)
                 PushWE((ushort)(Registers.PCw - 1));
@@ -8952,7 +8953,7 @@ namespace SuperNintendo.Core.CPU
         {
             // Note: JSR (a,X) is a new instruction,
             // and so doesn't respect the emu-mode stack bounds.
-            var addr = AbsoluteIndexedIndirect(AccessMode.JSR);
+            var addr = (ushort)AbsoluteIndexedIndirect(AccessMode.JSR);
             PushW((ushort)(Registers.PCw - 1));
             Registers.SH = 1;
             Memory.Memory.SetPCBase(ICPU.ShiftedPB + addr);
@@ -8960,14 +8961,14 @@ namespace SuperNintendo.Core.CPU
 
         private static void OpFCE0()
         {
-            var addr = AbsoluteIndexedIndirect(AccessMode.JSR);
+            var addr = (ushort)AbsoluteIndexedIndirect(AccessMode.JSR);
             PushW((ushort)(Registers.PCw - 1));
             Memory.Memory.SetPCBase(ICPU.ShiftedPB + addr);
         }
 
         private static void OpFCSlow()
         {
-            var addr = AbsoluteIndexedIndirectSlow(AccessMode.JSR);
+            var addr = (ushort)AbsoluteIndexedIndirectSlow(AccessMode.JSR);
             PushW((ushort)(Registers.PCw - 1));
             if (CheckEmulation() > 0)
                 Registers.SH = 1;

@@ -117,7 +117,9 @@ namespace SuperNintendo.Core.Memory
 
         public static void LoadROM(Stream stream)
         {
+            var position = ROM.Position;
             ROM = new MemorySet((int) (0x8000 + stream.Length));
+            ROM.Position = position;
             stream.Read(ROM.bytes, ROM.Position, (int)stream.Length);
             LoadROM((int)stream.Length);
         }
@@ -131,7 +133,7 @@ namespace SuperNintendo.Core.Memory
 
             if (addressData.MappingType == null)
             {
-                data = ROM[(int)(addressData.Position + (address & 0xffff))];
+                data = addressData[(int)(address & 0xffff)];
                 AddCyclesInMemoryAccess(speed);
                 return data;
             }
@@ -253,8 +255,8 @@ namespace SuperNintendo.Core.Memory
 
             if (GetAddressData.MappingType == null)
             {
-                word = (ushort)(ROM[(int)(GetAddressData.Position + (address & 0xffff))] | 
-                    ROM[(int)(GetAddressData.Position + ((address + 1) & 0xffff))] << 8);
+                word = (ushort)(GetAddressData[(int)(address & 0xffff)] |
+                    GetAddressData[(int)((address + 1) & 0xffff)] << 8);
 
                 AddCyclesInMemoryAccess_x2(speed);
                 return word;
@@ -379,7 +381,7 @@ namespace SuperNintendo.Core.Memory
 
             if (SetAddressData.MappingType == null)
             {
-                ROM[(int)(SetAddressData.Position + (address & 0xffff))] = data;
+                SetAddressData[(int)(address & 0xffff)] = data;
                 AddCyclesInMemoryAccess(speed);
                 return;
             }
@@ -515,8 +517,8 @@ namespace SuperNintendo.Core.Memory
 
             if (SetAddressData.MappingType == null)
             {
-                SetAddressData.MemoryLink[(int)(SetAddressData.Position + (address & 0xffff))] = (byte)(word >> 8);
-                SetAddressData.MemoryLink[(int)(SetAddressData.Position + ((address + 1) & 0xffff))] = (byte)word;
+                SetAddressData[(int)(address & 0xffff)] = (byte)(word >> 8);
+                SetAddressData[(int)((address + 1) & 0xffff)] = (byte)word;
                 AddCyclesInMemoryAccess_x2(speed);
                 return;
             }
@@ -1014,17 +1016,17 @@ namespace SuperNintendo.Core.Memory
         private static void MapWRAM()
         {
             // will overwrite others
-            MapSpace(0x7e, 0x7e, 0x0000, 0xffff, new MappingData { MemoryLink = RAM, Position = 0, MappingType = MappingType.MAP_RAM });
-            MapSpace(0x7f, 0x7f, 0x0000, 0xffff, new MappingData { MemoryLink = RAM, Position = 0x10000, MappingType = MappingType.MAP_RAM });
+            MapSpace(0x7e, 0x7e, 0x0000, 0xffff, new MappingData { MemoryLink = RAM, Position = 0 });
+            MapSpace(0x7f, 0x7f, 0x0000, 0xffff, new MappingData { MemoryLink = RAM, Position = 0x10000 });
         }
 
         private static void MapSystem()
         {
             // will be overwritten
-            MapSpace(0x00, 0x3f, 0x0000, 0x1fff, new MappingData { MemoryLink = RAM, Position = 0, MappingType = MappingType.MAP_RAM });
+            MapSpace(0x00, 0x3f, 0x0000, 0x1fff, new MappingData { MemoryLink = RAM, Position = 0 });
             MapIndex(0x00, 0x3f, 0x2000, 0x3fff, MappingType.MAP_PPU, MapType.MAP_TYPE_I_O);
             MapIndex(0x00, 0x3f, 0x4000, 0x5fff, MappingType.MAP_CPU, MapType.MAP_TYPE_I_O);
-            MapSpace(0x80, 0xbf, 0x0000, 0x1fff, new MappingData { MemoryLink = RAM, Position = 0, MappingType = MappingType.MAP_RAM });
+            MapSpace(0x80, 0xbf, 0x0000, 0x1fff, new MappingData { MemoryLink = RAM, Position = 0 });
             MapIndex(0x80, 0xbf, 0x2000, 0x3fff, MappingType.MAP_PPU, MapType.MAP_TYPE_I_O);
             MapIndex(0x80, 0xbf, 0x4000, 0x5fff, MappingType.MAP_CPU, MapType.MAP_TYPE_I_O);
         }
@@ -1056,7 +1058,7 @@ namespace SuperNintendo.Core.Memory
                 {
                     var p = (c << 4) | (i >> 12);
                     var addr = (c & 0x7f) * 0x8000;
-                    Map[p] = new MappingData { MemoryLink = ROM, Position = (int) (MapMirror(size, addr) - (i & 0x8000)) };
+                    Map[p] = new MappingData { MemoryLink = ROM, Position = (int) ((MapMirror(size, addr) - (i & 0x8000))) };
                     BlockIsROM[p] = true;
                     BlockIsRAM[p] = true;
                 }
