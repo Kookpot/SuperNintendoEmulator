@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 14.00
+# Visual Studio 2019
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SNESFromScratch", "SNESFromScratch\SNESFromScratch.csproj", "{A3FDF0ED-96A7-4FBC-A5B1-23F46618D212}"
 EndProject
 Global
