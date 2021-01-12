@@ -5,6 +5,7 @@ obj/
 */launchSettings.json
 *.log
 PublishProfiles/
+packages/
 *.local
 *~
 *.user
