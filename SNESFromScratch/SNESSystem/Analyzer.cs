@@ -24,7 +24,7 @@ namespace SNESFromScratch.SNESSystem
 
         public static void WriteLine(string line)
         {
-            //Writer.WriteLine(line);
+            Writer.WriteLine(line);
         }
     }
 }

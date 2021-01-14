@@ -18,7 +18,9 @@ namespace SNESFromScratch.Rendering
             BitmapData bitmapData = img.LockBits(bmpRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
             Marshal.Copy(buffer, 0, bitmapData.Scan0, buffer.Length);
             img.UnlockBits(bitmapData);
+            var old = Control.Image;
             Control.Image = img;
+            old?.Dispose();
         }
 
         public void SetTargetControl(PictureBox control)

@@ -163,7 +163,6 @@ namespace SNESFromScratch.SNESSystem
                 Renderer.RenderBuffer(PPU.BackBuffer);
                 _fps.LockFramerate();
                 form.Text = _fps.GetFPS();
-                //Analyzer.IncreaseFrame();
                 Application.DoEvents();
             }
         }
