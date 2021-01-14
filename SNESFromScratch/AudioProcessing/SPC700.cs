@@ -41,7 +41,7 @@
         private int _cpuO3;
         private bool Halted;
 
-        private struct Tmr
+        private class Tmr
         {
             public int Clock;
             public int Cycles;
@@ -50,7 +50,7 @@
             public int Out;
         }
 
-        private readonly Tmr[] Timer = new Tmr[3];
+        private readonly Tmr[] Timer = {new Tmr(), new Tmr(), new Tmr()};
         private int _dspCycles;
 
         // Write
@@ -1334,7 +1334,6 @@
                         }
                         timer.Cycles -= timer.Clock;
                     }
-                    Timer[i] = timer;
                 }
             }
         }
@@ -1397,10 +1396,7 @@
             int displacement = Read8PC();
             if ((displacement & 0x80) != 0)
             {
-                unchecked
-                {
-                    displacement |= (int) 0xFFFFFF00;
-                }
+                displacement = (int) (displacement |0xFFFFFF00);
             }
             return (_pc + displacement) & 0xFFFF;
         }

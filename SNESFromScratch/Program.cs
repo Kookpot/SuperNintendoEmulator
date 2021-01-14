@@ -28,6 +28,7 @@ namespace SNESFromScratch
             container.Register<ISNESSystem, SNESSystem.SNESSystem>();
             container.Register<ICPU, C65816>();
             container.Register<MainForm, MainForm>();
+            container.Register<IKeyMapper, KeyMapper>();
             container.Register<IRenderer, Renderer>();
             container.Register<ISPC700, SPC700>();
             container.Register<IDMA, DMA>();

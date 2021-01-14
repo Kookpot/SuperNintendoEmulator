@@ -4,7 +4,7 @@ namespace SNESFromScratch.CentralMemory
 {
     public class DMA : IDMA
     {
-        private struct DMAChannel
+        private class DMAChannel
         {
             public int Parameters;
             public int PPUAddress;
@@ -17,7 +17,11 @@ namespace SNESFromScratch.CentralMemory
             public bool Enabled;
         }
 
-        private readonly DMAChannel[] _channels = new DMAChannel[8];
+        private readonly DMAChannel[] _channels =
+        {
+            new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(),
+            new DMAChannel(), new DMAChannel()
+        };
         private ISNESSystem _system;
 
         public void SetSystem(ISNESSystem system)
@@ -217,6 +221,7 @@ namespace SNESFromScratch.CentralMemory
                                 if (currentChannel.HDMALine == 0)
                                 {
                                     currentChannel.Enabled = false;
+                                    _channels[channelIndex] = currentChannel;
                                     continue;
                                 }
                                 if ((currentChannel.Parameters & 0x40) != 0)

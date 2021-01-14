@@ -49,7 +49,7 @@ namespace SNESFromScratch.AudioProcessing
             Sustain,
             Release
         }
-        private struct DSPCh
+        private class DSPCh
         {
             public int VolL;
             public int VolR;
@@ -79,7 +79,7 @@ namespace SNESFromScratch.AudioProcessing
             public bool Enabled;
         }
 
-        private readonly DSPCh[] _channel = new DSPCh[8];
+        private readonly DSPCh[] _channel = {new DSPCh(), new DSPCh(), new DSPCh(), new DSPCh(), new DSPCh(), new DSPCh(), new DSPCh(), new DSPCh()};
         private int _mVolL;
         private int _mVolR;
         private int _eVolL;
@@ -151,7 +151,6 @@ namespace SNESFromScratch.AudioProcessing
                     mixL = ClampS16(mixL + sampleL);
                     mixR = ClampS16(mixR + sampleR);
                 }
-                _channel[channelIndex] = currentChannel;
             }
             mixL = (mixL * _mVolL) >> 7;
             mixR = (mixR * _mVolR) >> 7;

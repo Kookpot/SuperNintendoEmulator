@@ -124,7 +124,7 @@ namespace SNESFromScratch.IO
                 case 0x421B:
                     returnVal = _joy2 >> 8;
                     break;
-                case 0x421:
+                case 0x421C:
                     returnVal = _joy3 & 0xFF;
                     break;
                 case 0x421D:
@@ -205,7 +205,7 @@ namespace SNESFromScratch.IO
                 case 0x420B:
                     MDMAEnabled = value;
                     break;
-                case 0x420:
+                case 0x420C:
                     HDMAEnabled = value;
                     for (int channel = 0; channel <= 7; channel++)
                     {

@@ -35,7 +35,7 @@
             this.ToolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.DumpVRAMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.InputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.PicScreen)).BeginInit();
             this.MMenu.SuspendLayout();
             this.SuspendLayout();
@@ -62,7 +62,7 @@
             this.OptionsToolStripMenuItem});
             this.MMenu.Location = new System.Drawing.Point(0, 0);
             this.MMenu.Name = "MMenu";
-            this.MMenu.Size = new System.Drawing.Size(341, 30);
+            this.MMenu.Size = new System.Drawing.Size(341, 28);
             this.MMenu.TabIndex = 1;
             this.MMenu.Text = "Menu";
             // 
@@ -73,7 +73,7 @@
             this.ToolStripMenuItem1,
             this.ExitToolStripMenuItem});
             this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
-            this.FileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
+            this.FileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.FileToolStripMenuItem.Text = "&File";
             // 
             // OpenROMToolStripMenuItem
@@ -96,16 +96,16 @@
             // OptionsToolStripMenuItem
             // 
             this.OptionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.DumpVRAMToolStripMenuItem});
+            this.InputToolStripMenuItem});
             this.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem";
-            this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(75, 26);
+            this.OptionsToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
             this.OptionsToolStripMenuItem.Text = "&Options";
             // 
-            // DumpVRAMToolStripMenuItem
+            // InputToolStripMenuItem
             // 
-            this.DumpVRAMToolStripMenuItem.Name = "DumpVRAMToolStripMenuItem";
-            this.DumpVRAMToolStripMenuItem.Size = new System.Drawing.Size(178, 26);
-            this.DumpVRAMToolStripMenuItem.Text = "&Dump VRAM";
+            this.InputToolStripMenuItem.Name = "InputToolStripMenuItem";
+            this.InputToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.InputToolStripMenuItem.Text = "&Input";
             // 
             // MainForm
             // 
@@ -135,7 +135,7 @@
         private System.Windows.Forms.ToolStripSeparator ToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OptionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem DumpVRAMToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem InputToolStripMenuItem;
 
         #endregion
     }

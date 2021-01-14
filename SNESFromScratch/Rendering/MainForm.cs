@@ -11,8 +11,9 @@ namespace SNESFromScratch.Rendering
         private readonly IFPS _fps;
         private readonly ISNESSystem _system;
         private readonly IRenderer _renderer;
+        private readonly IKeyMapper _keyMapper;
 
-        public MainForm(ISNESSystem system, IRenderer renderer, IFPS fps)
+        public MainForm(ISNESSystem system, IRenderer renderer, IFPS fps, IKeyMapper keyMapper)
         {
             Load += FrmMainLoad;
             KeyDown += FrmMainKeyDown;
@@ -22,6 +23,7 @@ namespace SNESFromScratch.Rendering
             _fps = fps;
             _system = system;
             _renderer = renderer;
+            _keyMapper = keyMapper;
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
@@ -45,7 +47,7 @@ namespace SNESFromScratch.Rendering
 
             OpenROMToolStripMenuItem.Click += OpenROMToolStripMenuItemClick;
             ExitToolStripMenuItem.Click += ExitToolStripMenuItemClick;
-            DumpVRAMToolStripMenuItem.Click += DumpVRAMToolStripMenuItemClick;
+            InputToolStripMenuItem.Click += InputToolStripMenuItemClick;
         }
 
         private void FrmMainKeyDown(object sender, KeyEventArgs e)
@@ -58,46 +60,12 @@ namespace SNESFromScratch.Rendering
             KeyAction(e, _system.SetKeyUp);
         }
 
-        private static void KeyAction(KeyEventArgs e, Action<SNESButton> act)
+        private void KeyAction(KeyEventArgs e, Action<SNESButton> act)
         {
-            switch (e.KeyCode)
+            var snesButton = _keyMapper.Map(e.KeyCode);
+            if (snesButton.HasValue)
             {
-                case Keys.Up:
-                    act(SNESButton.Up);
-                    break;
-                case Keys.Down:
-                    act(SNESButton.Down);
-                    break;
-                case Keys.Left:
-                    act(SNESButton.Left);
-                    break;
-                case Keys.Right:
-                    act(SNESButton.Right);
-                    break;
-                case Keys.Return:
-                    act(SNESButton.Start);
-                    break;
-                case Keys.Tab:
-                    act(SNESButton.Sel);
-                    break;
-                case Keys.S:
-                    act(SNESButton.Y);
-                    break;
-                case Keys.X:
-                    act(SNESButton.B);
-                    break;
-                case Keys.D:
-                    act(SNESButton.X);
-                    break;
-                case Keys.C:
-                    act(SNESButton.A);
-                    break;
-                case Keys.Q:
-                    act(SNESButton.L);
-                    break;
-                case Keys.W:
-                    act(SNESButton.R);
-                    break;
+                act(snesButton.Value);
             }
         }
 
@@ -124,9 +92,10 @@ namespace SNESFromScratch.Rendering
             Close();
         }
 
-        private void DumpVRAMToolStripMenuItemClick(object sender, EventArgs e)
+        private void InputToolStripMenuItemClick(object sender, EventArgs e)
         {
-            File.WriteAllBytes(@"D:\vramnew.bin", _system.PPU.VRAM);
+            var popup = new InputChangerForm(_keyMapper);
+            popup.ShowDialog(this);
         }
     }
 }

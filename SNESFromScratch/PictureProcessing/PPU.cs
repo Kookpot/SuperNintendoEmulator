@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using SNESFromScratch.SNESSystem;
+﻿using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.PictureProcessing
 {
@@ -19,7 +18,7 @@ namespace SNESFromScratch.PictureProcessing
         private readonly int[] _pal = new int[256];
         private int BgCol;
 
-        private struct BackgroundStruct
+        private class BackgroundStruct
         {
             public int SC;
             public int HorizontalOffset;
@@ -40,7 +39,7 @@ namespace SNESFromScratch.PictureProcessing
             { 8, 8, 0, 0 }
         };
 
-        private readonly BackgroundStruct[] _backGrounds = new BackgroundStruct[4];
+        private readonly BackgroundStruct[] _backGrounds = {new BackgroundStruct(), new BackgroundStruct(), new BackgroundStruct(), new BackgroundStruct()};
 
         private int _objectSelection;
         private int _backgroundMode;
@@ -274,15 +273,14 @@ namespace SNESFromScratch.PictureProcessing
                     _verticalCtLoHi = false;
                     Stat78 &= ~0x40;
                     break;
-                default:
-                    Debug.WriteLine("WARN: Trying to read unimplemented Address " + address.ToString("X4"));
-                    break;
             }
             return returnVal;
         }
 
         public void Write8(int address, int value)
         {
+            //counter++;
+            //Analyzer.WriteLine("PPU Write8:" + counter + ":" +  + address + ":" + value);
             switch (address)
             {
                 case 0x2100:
@@ -364,7 +362,6 @@ namespace SNESFromScratch.PictureProcessing
                     BackgroundStruct backGround = _backGrounds[0];
                     backGround.HorizontalOffset = (value << 8) | (backGround.HorizontalOffsetOld & ~7) | ((backGround.HorizontalOffset >> 8) & 7);
                     backGround.HorizontalOffsetOld = value;
-                    _backGrounds[0] = backGround;
                     break;
                 case 0x210E:
                     _m7V = _m7Old | (value << 8);
@@ -372,43 +369,36 @@ namespace SNESFromScratch.PictureProcessing
                     backGround = _backGrounds[0];
                     backGround.VerticalOffset = (value << 8) | backGround.VerticalOffsetOld;
                     backGround.VerticalOffsetOld = value;
-                    _backGrounds[0] = backGround;
                     break;
                 case 0x210F:
                     backGround = _backGrounds[1];
                     backGround.HorizontalOffset = (value << 8) | (backGround.HorizontalOffsetOld & ~7) | ((backGround.HorizontalOffset >> 8) & 7);
                     backGround.HorizontalOffsetOld = value;
-                    _backGrounds[1] = backGround;
                     break;
                 case 0x2110:
                     backGround = _backGrounds[1];
                     backGround.VerticalOffset = (value << 8) | backGround.VerticalOffsetOld;
                     backGround.VerticalOffsetOld = value;
-                    _backGrounds[1] = backGround;
                     break;
                 case 0x2111:
                     backGround = _backGrounds[2];
                     backGround.HorizontalOffset = (value << 8) | (backGround.HorizontalOffsetOld & ~7) | ((backGround.HorizontalOffset >> 8) & 7);
                     backGround.HorizontalOffsetOld = value;
-                    _backGrounds[2] = backGround;
                     break;
                 case 0x2112:
                     backGround = _backGrounds[2];
                     backGround.VerticalOffset = (value << 8) | backGround.VerticalOffsetOld;
                     backGround.VerticalOffsetOld = value;
-                    _backGrounds[2] = backGround;
                     break;
                 case 0x2113:
                     backGround = _backGrounds[3];
                     backGround.HorizontalOffset = (value << 8) | (backGround.HorizontalOffsetOld & ~7) | ((backGround.HorizontalOffset >> 8) & 7);
                     backGround.HorizontalOffsetOld = value;
-                    _backGrounds[3] = backGround;
                     break;
                 case 0x2114:
                     backGround = _backGrounds[3];
                     backGround.VerticalOffset = (value << 8) | backGround.VerticalOffsetOld;
                     backGround.VerticalOffsetOld = value;
-                    _backGrounds[3] = backGround;
                     break;
                 case 0x2115:
                     _vmaIn = value;
@@ -621,7 +611,7 @@ namespace SNESFromScratch.PictureProcessing
                         int tmy = (bmpY >> 11) & 0x7F;
                         int pixelX = (bmpX >> 8) & 7;
                         int pixelY = (bmpY >> 8) & 7;
-                        if (mosEnabled & mosCounter % mosSize == 0 | !mosEnabled)
+                        if (mosEnabled && mosCounter % mosSize == 0 || !mosEnabled)
                         {
                             if ((_m7Selection & 1) != 0)
                             {
@@ -639,7 +629,7 @@ namespace SNESFromScratch.PictureProcessing
                             }
                         }
                         int chrAddr = VRAM[(tmx + (tmy << 7)) << 1] * 128;
-                        if (xOver | yOver)
+                        if (xOver || yOver)
                         {
                             if (scrnOver == 2)
                             {
@@ -727,7 +717,7 @@ namespace SNESFromScratch.PictureProcessing
                                 tmAddr += tmsy << 11;
                                 break;
                             case 3:
-                                tmAddr = tmAddr + (tmsx << 11) + (tmsy << 12);
+                                tmAddr += (tmsx << 11) + (tmsy << 12);
                                 break;
                         }
                         tmAddr &= 0xFFFE;
@@ -771,7 +761,7 @@ namespace SNESFromScratch.PictureProcessing
                                     {
                                         xBit ^= 7;
                                     }
-                                    if (horizontalFlip & t16)
+                                    if (horizontalFlip && t16)
                                     {
                                         tbxOffset ^= 8;
                                     }
@@ -810,7 +800,6 @@ namespace SNESFromScratch.PictureProcessing
                         }
                     }
                 }
-                _backGrounds[layer] = backGround;
             }
         }
 
@@ -863,21 +852,21 @@ namespace SNESFromScratch.PictureProcessing
                     if (doMath && _useMath[x] && (_cgAdSub & (1 << _mainZOrder[x])) != 0)
                     {
                         int mCol = (_cgwSelection & 2) != 0 ? _secondaryScreen[x] : BgCol;
-                        int div2 = (_cgAdSub & 0x40) != 0 && !(_secondaryZOrder[x] == 5 | isBlack) ? 1 : 0;
+                        bool div2 = (_cgAdSub & 0x40) != 0 && !(_secondaryZOrder[x] == 5 || isBlack);
                         int R;
                         int G;
                         int B;
                         if ((_cgAdSub & 0x80) != 0)
                         {
-                            R = (((_mainScreen[x] >> 0) & 0xFF) - ((mCol >> 0) & 0xFF)) >> div2 != 0 ? 1 : 0;
-                            G = (((_mainScreen[x] >> 8) & 0xFF) - ((mCol >> 8) & 0xFF)) >> div2 != 0 ? 1 : 0;
-                            B = (((_mainScreen[x] >> 16) & 0xFF) - ((mCol >> 16) & 0xFF)) >> div2 != 0 ? 1 : 0;
+                            R = (((_mainScreen[x] >> 0) & 0xFF) - ((mCol >> 0) & 0xFF)) >> (div2 ? 1 : 0);
+                            G = (((_mainScreen[x] >> 8) & 0xFF) - ((mCol >> 8) & 0xFF)) >> (div2 ? 1 : 0);
+                            B = (((_mainScreen[x] >> 16) & 0xFF) - ((mCol >> 16) & 0xFF)) >> (div2 ? 1 : 0);
                         }
                         else
                         {
-                            R = (((_mainScreen[x] >> 0) & 0xFF) + ((mCol >> 0) & 0xFF)) >> div2 != 0 ? 1 : 0;
-                            G = (((_mainScreen[x] >> 8) & 0xFF) + ((mCol >> 8) & 0xFF)) >> div2 != 0 ? 1 : 0;
-                            B = (((_mainScreen[x] >> 16) & 0xFF) + ((mCol >> 16) & 0xFF)) >> div2 != 0 ? 1 : 0;
+                            R = (((_mainScreen[x] >> 0) & 0xFF) + ((mCol >> 0) & 0xFF)) >> (div2 ? 1 : 0);
+                            G = (((_mainScreen[x] >> 8) & 0xFF) + ((mCol >> 8) & 0xFF)) >> (div2 ? 1 : 0);
+                            B = (((_mainScreen[x] >> 16) & 0xFF) + ((mCol >> 16) & 0xFF)) >> (div2 ? 1 : 0);
                         }
                         color = ClampU8(R) | (ClampU8(G) << 8) | (ClampU8(B) << 16);
                     }
@@ -917,19 +906,19 @@ namespace SNESFromScratch.PictureProcessing
             switch (w1Sel)
             {
                 case 2:
-                    w1Val = x >= _wH0 & x <= _wH1;
+                    w1Val = x >= _wH0 && x <= _wH1;
                     break;
                 case 3:
-                    w1Val = x < _wH0 | x > _wH1; 
+                    w1Val = x < _wH0 || x > _wH1; 
                     break;
             }
             switch (w2Sel)
             {
                 case 2:
-                    w2Val = x >= _wH2 & x <= _wH3;
+                    w2Val = x >= _wH2 && x <= _wH3;
                     break;
                 case 3:
-                    w2Val = x < _wH2 | x > _wH3;
+                    w2Val = x < _wH2 || x > _wH3;
                     break;
             }
             bool wVal = false;
@@ -1022,7 +1011,7 @@ namespace SNESFromScratch.PictureProcessing
                     mEnabled = !disable;
                 }
             }
-            bool colorMath = math & mEnabled;
+            bool colorMath = math && mEnabled;
             sEnabled = sEnabled && (_ts & (1 << layer)) != 0 && _secondaryZOrder[x] == 5;
             mEnabled = mEnabled && (_tm & (1 << layer)) != 0 && _mainZOrder[x] == 5;
             if (sEnabled)
@@ -1066,21 +1055,20 @@ namespace SNESFromScratch.PictureProcessing
                     tmAddress += tmsy << 11;
                     break;
                 case 3:
-                    tmAddress = tmAddress + (tmsx << 11) + (tmsy << 12);
+                    tmAddress += (tmsx << 11) + (tmsy << 12);
                     break;
             }
             tmAddress &= 0xFFFE;
             int vl = VRAM[tmAddress];
             int vh = VRAM[tmAddress + 1];
-            int tile = vl | (vh << 8);
-            return tile;
+            return vl | (vh << 8);
         }
 
         private byte ReadChr(int address, int bpp, int x)
         {
             byte color = 0;
             int bit = 0x80 >> x;
-            if ((VRAM[address + 0] & bit) != 0)
+            if ((VRAM[address] & bit) != 0)
             {
                 color |= 0x1;
             }
@@ -1156,10 +1144,7 @@ namespace SNESFromScratch.PictureProcessing
                 offset = (offset + 4) & 0x1FF;
                 if (y >= 224)
                 {
-                    unchecked
-                    {
-                        y |= (int) 0xFFFFFF00;
-                    }
+                    y = (int) (y | 0xFFFFFF00);
                 }
                 if (line < y)
                 {
@@ -1279,9 +1264,9 @@ namespace SNESFromScratch.PictureProcessing
                             }
                             break;
                     }
-                    bool xOffsetScreen = x >= 256 | x + ((tx + 1) << 3) < 0;
+                    bool xOffsetScreen = x >= 256 || x + ((tx + 1) << 3) < 0;
                     bool YOffsetLine = line >= y + ((ty + 1) << 3);
-                    if (xOffsetScreen | YOffsetLine)
+                    if (xOffsetScreen || YOffsetLine)
                     {
                         continue;
                     }

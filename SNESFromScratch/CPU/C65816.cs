@@ -1,4 +1,5 @@
-﻿using SNESFromScratch.SNESSystem;
+﻿using System.Runtime.CompilerServices;
+using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.CPU
 {
@@ -183,7 +184,7 @@ namespace SNESFromScratch.CPU
             return returnVal;
         }
 
-        public void Write8(int address, int value, bool incCycles = true)
+        public void Write8(int address, int value, bool incCycles = true, [CallerFilePath] string filePath = "",[CallerMemberName] string callerName = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             int bank = address >> 16;
             address &= 0xFFFF;
@@ -1512,10 +1513,7 @@ namespace SNESFromScratch.CPU
             int displacement = Read8PC();
             if ((displacement & 0x80) != 0)
             {
-                unchecked
-                {
-                    displacement |= (int) 0xFFFFFF00;
-                }
+                displacement = (int) (displacement | 0xFFFFFF00);
             }
             return (_pc + displacement) & 0xFFFF;
         }
@@ -1525,10 +1523,7 @@ namespace SNESFromScratch.CPU
             int displacement = Read16PC();
             if ((displacement & 0x8000) != 0)
             {
-                unchecked
-                {
-                    displacement |= (int) 0xFFFF0000;
-                }
+                displacement = (int) (displacement | 0xFFFF0000);
             }
             return (_pc + displacement) & 0xFFFF;
         }
