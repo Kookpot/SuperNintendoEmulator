@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace SNESFromScratch.AudioProcessing
 {
@@ -8,6 +9,7 @@ namespace SNESFromScratch.AudioProcessing
         private const int MaxS16 = 32767;
         private const int MaxU11 = 0x7FF;
 
+        [JsonIgnore]
         private readonly int[] _gaussLUT = { 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x001,
             0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x001, 0x002, 0x002, 0x002, 0x002, 0x002, 0x002, 0x002, 0x003, 0x003, 0x003, 0x003,
             0x003, 0x004, 0x004, 0x004, 0x004, 0x004, 0x005, 0x005, 0x005, 0x005, 0x006, 0x006, 0x006, 0x006, 0x007, 0x007, 0x007, 0x008, 0x008, 0x008, 0x009,
@@ -34,8 +36,10 @@ namespace SNESFromScratch.AudioProcessing
             0x500, 0x502, 0x503, 0x504, 0x506, 0x507, 0x508, 0x50A, 0x50B, 0x50C, 0x50D, 0x50E, 0x50F, 0x510, 0x511, 0x511, 0x512, 0x513, 0x514, 0x514, 0x515,
             0x516, 0x516, 0x517, 0x517, 0x517, 0x518, 0x518, 0x518, 0x518, 0x518, 0x519, 0x519 };
 
+        [JsonIgnore]
         private readonly int[] _rateLUT = { -1, 2048, 1536, 1280, 1024, 768, 640, 512, 384, 320, 256, 192, 160, 128, 96, 80, 64, 48, 40, 32, 24, 20, 16, 12, 10, 8, 6, 5, 4, 3, 2, 1 };
 
+        [JsonIgnore]
         private readonly int[] _offsetLUT = { 0, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 536, 0, 1040, 0, 0 };
 
         private readonly byte[] _soundBuffer = new byte[81920];
@@ -49,6 +53,7 @@ namespace SNESFromScratch.AudioProcessing
             Sustain,
             Release
         }
+
         private class DSPCh
         {
             public int VolL;
@@ -96,7 +101,8 @@ namespace SNESFromScratch.AudioProcessing
         private int _dir;
         private int _eSA;
         private int _eDl;
-        private readonly ISPC700 _parent;
+
+        private ISPC700 _parent;
 
         public DSP(ISPC700 spc700)
         {

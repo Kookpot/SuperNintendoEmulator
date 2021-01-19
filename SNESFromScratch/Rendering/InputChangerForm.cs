@@ -36,21 +36,25 @@ namespace SNESFromScratch.Rendering
 
         private void SaveClick(object sender, EventArgs e)
         {
-            _keyMapper.Clear();
-            _keyMapper.ChangeMap((Keys) ATextBox.Tag, SNESButton.A);
-            _keyMapper.ChangeMap((Keys) BTextBox.Tag, SNESButton.B);
-            _keyMapper.ChangeMap((Keys) XTextBox.Tag, SNESButton.X);
-            _keyMapper.ChangeMap((Keys) YTextBox.Tag, SNESButton.Y);
-            _keyMapper.ChangeMap((Keys) LTextBox.Tag, SNESButton.L);
-            _keyMapper.ChangeMap((Keys) RTextBox.Tag, SNESButton.R);
-            _keyMapper.ChangeMap((Keys) SelectTextBox.Tag, SNESButton.Sel);
-            _keyMapper.ChangeMap((Keys) StartTextBox.Tag, SNESButton.Start);
-            _keyMapper.ChangeMap((Keys) UpTextBox.Tag, SNESButton.Up);
-            _keyMapper.ChangeMap((Keys) DownTextBox.Tag, SNESButton.Down);
-            _keyMapper.ChangeMap((Keys) LeftTextBox.Tag, SNESButton.Left);
-            _keyMapper.ChangeMap((Keys) RightTextBox.Tag, SNESButton.Right);
-            _keyMapper.SaveChanges();
-            Close();
+            try
+            {
+                _keyMapper.Clear();
+                _keyMapper.ChangeMap((Keys) ATextBox.Tag, SNESButton.A);
+                _keyMapper.ChangeMap((Keys) BTextBox.Tag, SNESButton.B);
+                _keyMapper.ChangeMap((Keys) XTextBox.Tag, SNESButton.X);
+                _keyMapper.ChangeMap((Keys) YTextBox.Tag, SNESButton.Y);
+                _keyMapper.ChangeMap((Keys) LTextBox.Tag, SNESButton.L);
+                _keyMapper.ChangeMap((Keys) RTextBox.Tag, SNESButton.R);
+                _keyMapper.ChangeMap((Keys) SelectTextBox.Tag, SNESButton.Sel);
+                _keyMapper.ChangeMap((Keys) StartTextBox.Tag, SNESButton.Start);
+                _keyMapper.ChangeMap((Keys) UpTextBox.Tag, SNESButton.Up);
+                _keyMapper.ChangeMap((Keys) DownTextBox.Tag, SNESButton.Down);
+                _keyMapper.ChangeMap((Keys) LeftTextBox.Tag, SNESButton.Left);
+                _keyMapper.ChangeMap((Keys) RightTextBox.Tag, SNESButton.Right);
+                _keyMapper.SaveChanges();
+                Close();
+            }
+            catch { }
         }
 
         private void TextBoxClicked(object sender, MouseEventArgs e)

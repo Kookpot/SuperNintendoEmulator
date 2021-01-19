@@ -5,6 +5,6 @@ namespace SNESFromScratch.Rendering
     public interface IRenderer
     {
         void RenderBuffer(int[] buffer);
-        void SetTargetControl(PictureBox control);
+        void SetTargetControl(PictureBox box);
     }
 }

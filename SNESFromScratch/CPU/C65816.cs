@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.CPU
@@ -44,6 +45,8 @@ namespace SNESFromScratch.CPU
         private bool _m6502;
         private bool _waiState;
         private bool _stpState;
+
+        [JsonIgnore]
         private ISNESSystem _system;
 
         public void Reset()

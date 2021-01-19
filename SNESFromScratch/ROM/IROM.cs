@@ -10,5 +10,6 @@
         byte GetSRAMSize();
         bool IsPAL();
         bool IsExHiRom();
+        string GetName();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using SNESFromScratch.AudioProcessing;
 using SNESFromScratch.CentralMemory;
 using SNESFromScratch.CPU;
@@ -12,18 +13,36 @@ namespace SNESFromScratch.SNESSystem
 {
     public class SNESSystem : ISNESSystem
     {
-        public ICPU CPU { get; }
-        public IIO IO { get; }
-        public IROM ROM { get; }
-        public IPPU PPU { get; }
-        public ISPC700 APU { get; }
+        public ICPU CPU { get; private set; }
+        public IIO IO { get; private set; }
+
+        [JsonIgnore]
+        public IROM ROM { get; private set; }
+        public IPPU PPU { get; private set; }
+        public ISPC700 APU { get; private set; }
+
+        [JsonIgnore]
         public IRenderer Renderer { get; }
-        public IDMA DMA { get; }
+
+        [JsonIgnore]
+        public string GameName { get; private set; }
+
+        public IDMA DMA { get; private set; }
         public int ScanLine { get; private set; }
         public int PPUDot { get; private set;  }
+        public string FileName { get; set; }
 
+        public event EventHandler FrameRendered;
+
+        [JsonIgnore]
         private bool _isExecuting;
+
+        [JsonIgnore]
         private readonly IFPS _fps;
+
+        [JsonIgnore] 
+        private Control _form;
+
         private const double APUCyclesPerLine = 65.0;   //1.024 MHz Clock
         private const double CPUCyclesPerLine = 1364.0; //21.477 MHz Clock
 
@@ -34,13 +53,33 @@ namespace SNESFromScratch.SNESSystem
             APU = spc700;
             CPU.SetSystem(this);
             IO = ioPort;
-            IO.SetSystem(this);
+            IO?.SetSystem(this);
             PPU = ppu;
             PPU.SetSystem(this);
             Renderer = renderer;
             _fps = fps;
             DMA = dma;
             DMA.SetSystem(this);
+        }
+
+        public void Merge(ISNESSystem system)
+        {
+
+            DMA = system.DMA;
+            DMA.SetSystem(this);
+            CPU = system.CPU;
+            APU = system.APU;
+            CPU.SetSystem(this);
+            IO = system.IO;
+            IO.SetSystem(this);
+            PPU = system.PPU;
+            PPU.SetSystem(this);
+            FileName = system.FileName;
+            ROM.LoadRom(system.FileName);
+            if (ROM.IsPAL())
+            {
+                PPU.Stat78 = 0x11;
+            }
         }
 
         public void SetKeyDown(SNESButton button)
@@ -55,7 +94,9 @@ namespace SNESFromScratch.SNESSystem
 
         public void LoadROM(string fileName, Control form)
         {
+            FileName = fileName;
             ROM.LoadRom(fileName);
+            GameName = ROM.GetName();
             if (ROM.IsPAL())
             {
                 PPU.Stat78 = 0x11;
@@ -72,7 +113,12 @@ namespace SNESFromScratch.SNESSystem
             _isExecuting = false;
         }
 
-        private void Run(Control form)
+        public bool IsRunning()
+        {
+            return _isExecuting;
+        }
+
+        public void ResumeEmulation()
         {
             _isExecuting = true;
             while (_isExecuting)
@@ -137,7 +183,7 @@ namespace SNESFromScratch.SNESSystem
                         {
                             CPU.ExecuteStep();
                         }
-                        APU.Execute((int) Math.Round(CPU.Cycles / CPUCyclesPerLine * APUCyclesPerLine));
+                        APU.Execute((int)Math.Round(CPU.Cycles / CPUCyclesPerLine * APUCyclesPerLine));
                         int oldDot = PPUDot;
                         PPUDot = CPU.Cycles >> 2;
                         if (InRange(oldDot, PPUDot, 274))
@@ -157,14 +203,21 @@ namespace SNESFromScratch.SNESSystem
                             }
                         }
                     }
-                    APU.Cycles -= (int) APUCyclesPerLine;
-                    CPU.Cycles -= (int) CPUCyclesPerLine;
+                    APU.Cycles -= (int)APUCyclesPerLine;
+                    CPU.Cycles -= (int)CPUCyclesPerLine;
                 }
                 Renderer.RenderBuffer(PPU.BackBuffer);
                 _fps.LockFramerate();
-                form.Text = _fps.GetFPS();
+                _form.Text = _fps.GetFPS();
+                FrameRendered?.Invoke(this, null);
                 Application.DoEvents();
             }
+        }
+
+        public void Run(Control form)
+        {
+            _form = form;
+            ResumeEmulation();
         }
 
         private static bool InRange(int min, int max, int value)

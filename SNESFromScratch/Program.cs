@@ -26,10 +26,12 @@ namespace SNESFromScratch
             container.Register<IROM, ROM.ROM>();
             container.Register<IFPS, FPS>();
             container.Register<ISNESSystem, SNESSystem.SNESSystem>();
+            container.Register<ISystemManager, SystemMananger>();
             container.Register<ICPU, C65816>();
             container.Register<MainForm, MainForm>();
             container.Register<IKeyMapper, KeyMapper>();
-            container.Register<IRenderer, Renderer>();
+            //container.Register<IRenderer, GDIRenderer>();
+            container.Register<IRenderer, SharpDXRenderer>();
             container.Register<ISPC700, SPC700>();
             container.Register<IDMA, DMA>();
             container.Verify();

@@ -58,6 +58,11 @@ namespace SNESFromScratch.ROM
             return _banks;
         }
 
+        public string GetName()
+        {
+            return _name;
+        }
+
         public void LoadRom(string fileName)
         {
             byte[] data = File.ReadAllBytes(fileName);

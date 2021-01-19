@@ -1,6 +1,6 @@
 ﻿namespace SNESFromScratch.Rendering
 {
-    partial class MainForm
+    sealed partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -36,6 +36,9 @@
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.InputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveGamePositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadGamePositionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.PicScreen)).BeginInit();
             this.MMenu.SuspendLayout();
             this.SuspendLayout();
@@ -71,6 +74,9 @@
             this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.OpenROMToolStripMenuItem,
             this.ToolStripMenuItem1,
+            this.saveGamePositionToolStripMenuItem,
+            this.loadGamePositionToolStripMenuItem,
+            this.toolStripMenuItem2,
             this.ExitToolStripMenuItem});
             this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
             this.FileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
@@ -79,18 +85,18 @@
             // OpenROMToolStripMenuItem
             // 
             this.OpenROMToolStripMenuItem.Name = "OpenROMToolStripMenuItem";
-            this.OpenROMToolStripMenuItem.Size = new System.Drawing.Size(165, 26);
+            this.OpenROMToolStripMenuItem.Size = new System.Drawing.Size(225, 26);
             this.OpenROMToolStripMenuItem.Text = "&Open ROM";
             // 
             // ToolStripMenuItem1
             // 
             this.ToolStripMenuItem1.Name = "ToolStripMenuItem1";
-            this.ToolStripMenuItem1.Size = new System.Drawing.Size(162, 6);
+            this.ToolStripMenuItem1.Size = new System.Drawing.Size(222, 6);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(165, 26);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(225, 26);
             this.ExitToolStripMenuItem.Text = "&Exit";
             // 
             // OptionsToolStripMenuItem
@@ -104,8 +110,27 @@
             // InputToolStripMenuItem
             // 
             this.InputToolStripMenuItem.Name = "InputToolStripMenuItem";
-            this.InputToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.InputToolStripMenuItem.Size = new System.Drawing.Size(126, 26);
             this.InputToolStripMenuItem.Text = "&Input";
+            // 
+            // saveGamePositionToolStripMenuItem
+            // 
+            this.saveGamePositionToolStripMenuItem.Name = "saveGamePositionToolStripMenuItem";
+            this.saveGamePositionToolStripMenuItem.Size = new System.Drawing.Size(225, 26);
+            this.saveGamePositionToolStripMenuItem.Text = "Save game position";
+            this.saveGamePositionToolStripMenuItem.Click += new System.EventHandler(this.SaveGamePositionToolStripMenuItem_Click);
+            // 
+            // loadGamePositionToolStripMenuItem
+            // 
+            this.loadGamePositionToolStripMenuItem.Name = "loadGamePositionToolStripMenuItem";
+            this.loadGamePositionToolStripMenuItem.Size = new System.Drawing.Size(225, 26);
+            this.loadGamePositionToolStripMenuItem.Text = "Load game position";
+            this.loadGamePositionToolStripMenuItem.Click += new System.EventHandler(this.LoadGamePositionToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(222, 6);
             // 
             // MainForm
             // 
@@ -138,5 +163,9 @@
         private System.Windows.Forms.ToolStripMenuItem InputToolStripMenuItem;
 
         #endregion
+
+        private System.Windows.Forms.ToolStripMenuItem saveGamePositionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadGamePositionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
     }
 }

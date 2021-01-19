@@ -2,9 +2,10 @@
 {
     public class SPC700 : ISPC700
     {
-        public byte[] WRAM { get; } = new byte[65536];
+        public byte[] WRAM { get; private set; } = new byte[65536];
 
         public int Cycles { get; set; }
+
         public IDSP DSP;
 
         private const int CyclesToSample = 32;

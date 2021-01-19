@@ -1,4 +1,5 @@
-﻿using SNESFromScratch.SNESSystem;
+﻿using Newtonsoft.Json;
+using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.CentralMemory
 {
@@ -22,6 +23,8 @@ namespace SNESFromScratch.CentralMemory
             new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(), new DMAChannel(),
             new DMAChannel(), new DMAChannel()
         };
+
+        [JsonIgnore]
         private ISNESSystem _system;
 
         public void SetSystem(ISNESSystem system)

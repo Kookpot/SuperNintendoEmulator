@@ -1,13 +1,13 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace SNESFromScratch.Rendering
 {
-    public class Renderer : IRenderer
+    public class GDIRenderer : IRenderer
     {
-        private PictureBox Control;
+        private PictureBox _box;
 
         public void RenderBuffer(int[] buffer)
         {
@@ -18,14 +18,14 @@ namespace SNESFromScratch.Rendering
             BitmapData bitmapData = img.LockBits(bmpRect, ImageLockMode.WriteOnly, PixelFormat.Format32bppPArgb);
             Marshal.Copy(buffer, 0, bitmapData.Scan0, buffer.Length);
             img.UnlockBits(bitmapData);
-            var old = Control.Image;
-            Control.Image = img;
+            var old = _box.Image;
+            _box.Image = img;
             old?.Dispose();
         }
 
-        public void SetTargetControl(PictureBox control)
+        public void SetTargetControl(PictureBox box)
         {
-            Control = control;
+            _box = box;
         }
     }
 }

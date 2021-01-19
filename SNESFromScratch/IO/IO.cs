@@ -1,4 +1,5 @@
-﻿using SNESFromScratch.SNESSystem;
+﻿using Newtonsoft.Json;
+using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.IO
 {
@@ -28,6 +29,7 @@ namespace SNESFromScratch.IO
         private int _wRAMMultiply;
         private int _wRAMDivision;
 
+        [JsonIgnore]
         private ISNESSystem _system;
 
         public void SetSystem(ISNESSystem system)

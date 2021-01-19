@@ -1,4 +1,5 @@
-﻿using SNESFromScratch.SNESSystem;
+﻿using Newtonsoft.Json;
+using SNESFromScratch.SNESSystem;
 
 namespace SNESFromScratch.PictureProcessing
 {
@@ -9,8 +10,8 @@ namespace SNESFromScratch.PictureProcessing
         public int OAMReload { get; private set; }
         public int Stat77 { get; set; }
         public int Stat78 { get; set; }
-        public int[] BackBuffer { get; } = new int[57344];
-        public byte[] VRAM { get; } = new byte[65536];
+        public int[] BackBuffer { get; private set; } = new int[57344];
+        public byte[] VRAM { get; private set; } = new byte[65536];
         public int OpHorizontalCounter { get; set; }
         public int OpVerticalCounter { get; set; }
 
@@ -93,6 +94,7 @@ namespace SNESFromScratch.PictureProcessing
         private readonly bool[] _useMath = new bool[256];
         private int[] _brightLUT;
 
+        [JsonIgnore]
         private ISNESSystem _system;
 
         public void SetSystem(ISNESSystem system)
