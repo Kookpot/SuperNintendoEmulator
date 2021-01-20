@@ -130,6 +130,10 @@ namespace SNESFromScratch.Rendering
                 _system.Merge(dialog.SNESSystem);
                 _system?.Run(this);
             }
+            else
+            {
+                _system.ResumeEmulation();
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace SNESFromScratch.Rendering
             }
         }
 
-        private readonly List<SaveFileInfo> _lst = new List<SaveFileInfo>();
+        private List<SaveFileInfo> _lst = new List<SaveFileInfo>();
 
         private readonly IRenderer _renderer;
 
@@ -64,8 +64,8 @@ namespace SNESFromScratch.Rendering
             var input = string.Empty;
             if (InputDialog.ShowInputDialog(ref input) == DialogResult.OK)
             {
-                var fileName = $"SaveGames/{SNESSystem.GameName}_{input.Trim()}.json";
-                _systemManager.Write(fileName, SNESSystem);
+                var fileName = $"SaveGames/{SaveSNESSystem.GameName}_{input.Trim()}.json";
+                _systemManager.Write(fileName, SaveSNESSystem);
                 DialogResult = DialogResult.OK;
                 Close();
             }
@@ -115,52 +115,57 @@ namespace SNESFromScratch.Rendering
             pictureBox1.Image = null;
             ErrorLabel.Text = string.Empty;
 
-            _selectedObject = (SaveFileInfo) listBox1.SelectedItem;
-            DateLabel.Text = $"Last modified: {_selectedObject.DateTime:dd/MM/yyyy HH:mm:ss}";
-            GameNameLabel.Text = $"Game : {_selectedObject.GameName}";
-            NameLabel.Text = $"Save Name: {_selectedObject.Name}";
-            try
+            if (listBox1.SelectedItem != null)
             {
-                using (var file = File.OpenText(_selectedObject.Path))
+                _selectedObject = (SaveFileInfo) listBox1.SelectedItem;
+                DateLabel.Text = $"Last modified: {_selectedObject.DateTime:dd/MM/yyyy HH:mm:ss}";
+                GameNameLabel.Text = $"Game : {_selectedObject.GameName}";
+                NameLabel.Text = $"Save Name: {_selectedObject.Name}";
+                try
                 {
-                    var reader = new JsonTextReader(file);
-                    JsonSerializer serializer = new JsonSerializer
+                    using (var file = File.OpenText(_selectedObject.Path))
                     {
-                        ContractResolver = new CustomContractResolver(),
-                        ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                        PreserveReferencesHandling = PreserveReferencesHandling.Objects
-                    };
-                    serializer.Converters.Add(new TestConverter());
-                    SNESSystem = serializer.Deserialize<ISNESSystem>(reader);
-                }
+                        var reader = new JsonTextReader(file);
+                        JsonSerializer serializer = new JsonSerializer
+                        {
+                            ContractResolver = new CustomContractResolver(),
+                            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                            PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                        };
+                        serializer.Converters.Add(new TestConverter());
+                        SNESSystem = serializer.Deserialize<ISNESSystem>(reader);
+                        SNESSystem.GameName = _selectedObject.GameName;
+                    }
 
-                if (new FileInfo(SNESSystem.FileName).Exists)
+                    if (new FileInfo(SNESSystem.FileName).Exists)
+                    {
+                        PathLabel.Text = $"Path to game : {SNESSystem.FileName}";
+                        PathLabel.ForeColor = Color.Black;
+                        PathLabel.Visible = true;
+                        LoadButton.Visible = true;
+                        ReloadButton.Visible = false;
+                        PathTextBox.Visible = false;
+                    }
+                    else
+                    {
+                        PathLabel.Visible = false;
+                        PathLabel.Text = $"Path to game not found : {SNESSystem.FileName}";
+                        PathLabel.ForeColor = Color.Red;
+                        PathTextBox.Text = SNESSystem.FileName;
+                        PathTextBox.Visible = !SelectOnly;
+                        ReloadButton.Visible = !SelectOnly;
+                        LoadButton.Visible = SelectOnly;
+                    }
+
+                    _renderer.RenderBuffer(SNESSystem.PPU.BackBuffer);
+                }
+                catch
                 {
-                    PathLabel.Text = $"Path to game : {SNESSystem.FileName}";
-                    PathLabel.ForeColor = Color.Black;
-                    PathLabel.Visible = true;
-                    LoadButton.Visible = true;
+                    ErrorLabel.Text = "Corrupt game position file";
+                    LoadButton.Visible = SelectOnly;
                     ReloadButton.Visible = false;
                     PathTextBox.Visible = false;
                 }
-                else
-                {
-                    PathLabel.Visible = false;
-                    PathLabel.Text = $"Path to game not found : {SNESSystem.FileName}";
-                    PathLabel.ForeColor = Color.Red;
-                    PathTextBox.Text = SNESSystem.FileName;
-                    PathTextBox.Visible = !SelectOnly;
-                    ReloadButton.Visible = !SelectOnly;
-                    LoadButton.Visible = SelectOnly;
-                }
-                _renderer.RenderBuffer(SNESSystem.PPU.BackBuffer);
-            }
-            catch
-            {
-                ErrorLabel.Text = "Corrupt game position file";
-                LoadButton.Visible = SelectOnly;
-                ReloadButton.Visible = false;
-                PathTextBox.Visible = false;
             }
         }
 
@@ -191,6 +196,11 @@ namespace SNESFromScratch.Rendering
                 };
                 info.Name = info.Name.Remove(info.Name.LastIndexOf(".", StringComparison.CurrentCultureIgnoreCase));
                 _lst.Add(info);
+            }
+
+            if (SelectOnly)
+            {
+                _lst = _lst.Where(x => x.GameName.Equals(SaveSNESSystem.GameName)).ToList();
             }
 
             var lst = _lst.OrderByDescending(x => x.DateTime).ToList();

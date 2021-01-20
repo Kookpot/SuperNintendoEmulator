@@ -1,4 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using Newtonsoft.Json;
 using SNESFromScratch.SNESSystem;
 
@@ -16,7 +20,13 @@ namespace SNESFromScratch.CPU
         private const int ThreeCycles = OneCycle * 3;
 
         private readonly byte[] _wRAM = new byte[131072];
-        private readonly byte[,] _sRAM = new byte[8, 32768];
+
+        [JsonIgnore]
+        private byte[,] _sRAM = new byte[8, 32768];
+
+        [JsonIgnore]
+        private Timer _sRAMTimer;
+
         private int _wRAMAddress;
         private int _dataBus;
         private bool _nmiPending;
@@ -231,6 +241,10 @@ namespace SNESFromScratch.CPU
                                 if ((bank & 0x7F) > 0x1F)
                                 {
                                     _sRAM[0, address & 0x1FFF] = (byte)value;
+                                    if (_sRAMTimer == null)
+                                    {
+                                        _sRAMTimer = new Timer(SaveSRAM, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+                                    }
                                 }
                                 break;
                         }
@@ -241,6 +255,10 @@ namespace SNESFromScratch.CPU
                     if (_system.ROM.GetSRAMSize() > 0)
                     {
                         _sRAM[bank & 7, address & 0x1FFF] = (byte)value;
+                        if (_sRAMTimer == null)
+                        {
+                            _sRAMTimer = new Timer(SaveSRAM, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(6));
+                        }
                     }
                 }
                 else
@@ -1081,6 +1099,7 @@ namespace SNESFromScratch.CPU
                     break;
             }
         }
+
         public void SetSystem(ISNESSystem system)
         {
             _system = system;
@@ -1091,12 +1110,37 @@ namespace SNESFromScratch.CPU
             _nmiPending = true;
         }
 
+        public void LoadSRAM()
+        {
+            var fileName = _system.FileName.Replace(".smc", ".srm").Replace(".sfc", ".srm");
+            if (new FileInfo(fileName).Exists)
+            {
+                using (Stream stream = File.Open(fileName, FileMode.Open, FileAccess.Read))
+                {
+                    BinaryFormatter bformatter = new BinaryFormatter();
+                    _sRAM = (byte[,])bformatter.Deserialize(stream);
+                }
+            }
+        }
+
         private int Read24(int address, bool incCycles = true)
         {
             int returnVal = Read8(address, incCycles);
             returnVal |= Read8(AddWB(address, 1), incCycles) << 8;
             returnVal |= Read8(AddWB(address, 2), incCycles) << 16;
             return returnVal;
+        }
+
+        private void SaveSRAM(object state)
+        {
+            var fileName = _system.FileName.Replace(".smc", ".srm").Replace(".sfc", ".srm");
+            using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.Write))
+            {
+                BinaryFormatter bformatter = new BinaryFormatter();
+                bformatter.Serialize(stream, _sRAM);
+            }
+            _sRAMTimer.Dispose();
+            _sRAMTimer = null;
         }
 
         private void Write16(int address, int value, bool incCycles = true)

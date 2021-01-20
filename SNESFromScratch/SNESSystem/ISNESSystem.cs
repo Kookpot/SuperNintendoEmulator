@@ -29,6 +29,6 @@ namespace SNESFromScratch.SNESSystem
         void Merge(ISNESSystem system);
         event EventHandler FrameRendered;
         string FileName { get; set; }
-        string GameName { get; }
+        string GameName { get; set; }
     }
 }

@@ -13,5 +13,6 @@ namespace SNESFromScratch.CPU
         void ExecuteStep();
         bool IRQPending { get; set; }
         void DoNMI();
+        void LoadSRAM();
     }
 }

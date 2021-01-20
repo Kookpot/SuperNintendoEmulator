@@ -25,7 +25,7 @@ namespace SNESFromScratch.SNESSystem
         public IRenderer Renderer { get; }
 
         [JsonIgnore]
-        public string GameName { get; private set; }
+        public string GameName { get; set; }
 
         public IDMA DMA { get; private set; }
         public int ScanLine { get; private set; }
@@ -64,7 +64,7 @@ namespace SNESFromScratch.SNESSystem
 
         public void Merge(ISNESSystem system)
         {
-
+            GameName = system.GameName;
             DMA = system.DMA;
             DMA.SetSystem(this);
             CPU = system.CPU;
@@ -120,6 +120,7 @@ namespace SNESFromScratch.SNESSystem
 
         public void ResumeEmulation()
         {
+            CPU.LoadSRAM();
             _isExecuting = true;
             while (_isExecuting)
             {
