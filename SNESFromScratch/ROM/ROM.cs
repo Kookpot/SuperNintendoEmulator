@@ -15,17 +15,12 @@ namespace SNESFromScratch.ROM
 
         public enum Mapper
         {
-            LoRom = 0x20,
-            HiRom = 0x21,
-            FastLoRom = 0x30,
-            FastHiRom = 0x31,
             ExLoRom = 0x32,
             ExHiRom = 0x35
         }
 
         private string _name;
         private bool _hiROM;
-        private byte _type;
         private byte _banks;
         private byte _sRAMSize;
         private Mapper _mapper;
@@ -92,7 +87,6 @@ namespace SNESFromScratch.ROM
             int bankAddress = bank * 0x7FFF;
             _name = Encoding.ASCII.GetString(data, bankAddress + 0x7FC0, 21);
             _mapper = (Mapper) data[bankAddress + 0x7FD5];
-            _type = data[bankAddress + 0x7FD6];
             _sRAMSize = data[bankAddress + 0x7FD8];
 
             switch (data[bankAddress + 0x7FD9])

@@ -14,7 +14,6 @@ namespace SNESFromScratch.PictureProcessing
         int OAMAddress { get; set; }
         int OAMReload { get; }
         int[] BackBuffer { get; }
-        byte[] VRAM { get; }
         int OpHorizontalCounter { get; set; }
         int OpVerticalCounter { get; set; }
     }

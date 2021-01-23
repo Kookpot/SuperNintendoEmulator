@@ -18,9 +18,6 @@ namespace SNESFromScratch.IO
         public int Joy1 { get; set; }
         public int HVIRQ { get; private set; }
 
-        private int _joy2;
-        private int _joy3;
-        private int _joy4;
         private int _ioRead;
         private int _divisionRead;
         private int _multiplyRead;
@@ -77,10 +74,6 @@ namespace SNESFromScratch.IO
                         {
                             _joyBBit = 0x8000;
                         }
-                        if ((_joy2 & _joyBBit) != 0)
-                        {
-                            returnVal = 1;
-                        }
                         _joyBBit >>= 1;
                     }
                     else
@@ -121,22 +114,16 @@ namespace SNESFromScratch.IO
                     returnVal = Joy1 >> 8;
                     break;
                 case 0x421A:
-                    returnVal = _joy2 & 0xFF;
                     break;
                 case 0x421B:
-                    returnVal = _joy2 >> 8;
                     break;
                 case 0x421C:
-                    returnVal = _joy3 & 0xFF;
                     break;
                 case 0x421D:
-                    returnVal = _joy3 >> 8;
                     break;
                 case 0x421E:
-                    returnVal = _joy4 & 0xFF;
                     break;
                 case 0x421F:
-                    returnVal = _joy4 >> 8;
                     break;
             }
             return returnVal;

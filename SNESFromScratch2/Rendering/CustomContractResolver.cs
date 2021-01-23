@@ -4,18 +4,16 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using SNESFromScratch.AudioProcessing;
-using SNESFromScratch.CentralMemory;
-using SNESFromScratch.CPU;
-using SNESFromScratch.PictureProcessing;
+using SNESFromScratch2.AudioProcessing;
+using SNESFromScratch2.PictureProcessing;
 
-namespace SNESFromScratch.Rendering
+namespace SNESFromScratch2.Rendering
 {
     public class CustomContractResolver : DefaultContractResolver
     {
         private readonly List<Type> _mapper = new List<Type>
         {
-            typeof(SNESSystem.SNESSystem), typeof(C65816), typeof(PPU), typeof(ROM.ROM), typeof(IO.IO), typeof(DMA), typeof(SPC700), typeof(DSP),
+            typeof(SNESSystem.SNESSystem), typeof(CPU.CPU), typeof(PPU), typeof(ROM.ROM), typeof(APU), typeof(SPC700), typeof(DSP),
         };
 
         protected override List<MemberInfo> GetSerializableMembers(Type objectType)

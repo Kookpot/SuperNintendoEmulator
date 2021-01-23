@@ -951,7 +951,7 @@
 
         private void BRA(int EA)
         {
-            if (_m6502 & (_pc & 0xFF00) != (EA & 0xFF00))
+            if (_m6502 && (_pc & 0xFF00) != (EA & 0xFF00))
             {
                 Cycles += TwoCycles;
             }

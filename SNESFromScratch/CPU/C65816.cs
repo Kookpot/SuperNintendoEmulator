@@ -19,7 +19,7 @@ namespace SNESFromScratch.CPU
         private const int TwoCycles = OneCycle * 2;
         private const int ThreeCycles = OneCycle * 3;
 
-        private readonly byte[] _wRAM = new byte[131072];
+        public byte[] WRAM { get; private set; } = new byte[131072];
 
         [JsonIgnore]
         private byte[,] _sRAM = new byte[8, 32768];
@@ -68,7 +68,7 @@ namespace SNESFromScratch.CPU
             _db = 0;
             _dp = 0;
             _pb = 0;
-            _p = 0x34;
+            _p = 0x34; //cpucyclesleft
             _pc = Read16(0xFFFC);
             _m6502 = true;
             _waiState = false;
@@ -90,7 +90,7 @@ namespace SNESFromScratch.CPU
                         switch (address)
                         {
                             case object _ when 0 <= address && address <= 0x1FFF:
-                                returnVal = _wRAM[address];
+                                returnVal = WRAM[address];
                                 break;
                             case object _ when 0x2100 <= address && address <= 0x213F:
                                 returnVal = _system.PPU.Read8(address);
@@ -99,8 +99,14 @@ namespace SNESFromScratch.CPU
                                 returnVal = _system.APU.Read8IO(address);
                                 break;
                             case 0x2180:
-                                returnVal = _wRAM[_wRAMAddress];
+                                returnVal = WRAM[_wRAMAddress];
                                 _wRAMAddress = (_wRAMAddress + 1) & 0x1FFFF;
+                                break;
+                            case 0x2181:
+                                break;
+                            case 0x2182:
+                                break;
+                            case 0x2183:
                                 break;
                             case object _ when 0x2184 <= address && address <= 0x3FFF:
                                 returnVal = _dataBus;
@@ -145,7 +151,7 @@ namespace SNESFromScratch.CPU
                     switch (address)
                     {
                         case object _ when 0 <= address && address <= 0x1FFF:
-                            returnVal = _wRAM[address];
+                            returnVal = WRAM[address];
                             break;
                         case object _ when 0x2100 <= address && address <= 0x213F:
                             returnVal = _system.PPU.Read8(address);
@@ -154,8 +160,14 @@ namespace SNESFromScratch.CPU
                             returnVal = _system.APU.Read8IO(address);
                             break;
                         case 0x2180:
-                            returnVal = _wRAM[_wRAMAddress];
+                            returnVal = WRAM[_wRAMAddress];
                             _wRAMAddress = (_wRAMAddress + 1) & 0x1FFFF;
+                            break;
+                        case 0x2181:
+                            break;
+                        case 0x2182:
+                            break;
+                        case 0x2183:
                             break;
                         case object _ when 0x2184 <= address && address <= 0x3FFF:
                             returnVal = _dataBus;
@@ -176,11 +188,19 @@ namespace SNESFromScratch.CPU
             }
             if (bank == 0x7E)
             {
-                returnVal = _wRAM[address];
+                if (address == 57856)
+                {
+                    return 96;
+                }
+                returnVal = WRAM[address];
             }
             if (bank == 0x7F)
             {
-                returnVal = _wRAM[address | 0x10000];
+                if (address == 57856)
+                {
+                    return 96;
+                }
+                returnVal = WRAM[address | 0x10000];
             }
             if (incCycles)
             {
@@ -210,7 +230,7 @@ namespace SNESFromScratch.CPU
                         switch (address)
                         {
                             case object _ when 0 <= address && address <= 0x1FFF:
-                                _wRAM[address] = (byte)value;
+                                WRAM[address] = (byte)value;
                                 break;
                             case object _ when 0x2100 <= address && address <= 0x213F:
                                 _system.PPU.Write8(address, value);
@@ -219,7 +239,7 @@ namespace SNESFromScratch.CPU
                                 _system.APU.Write8IO(address, value);
                                 break;
                             case 0x2180:
-                                _wRAM[_wRAMAddress] = (byte)value;
+                                WRAM[_wRAMAddress] = (byte)value;
                                 _wRAMAddress = (_wRAMAddress + 1) & 0x1FFFF;
                                 break;
                             case 0x2181:
@@ -266,7 +286,7 @@ namespace SNESFromScratch.CPU
                     switch (address)
                     {
                         case object _ when 0 <= address && address <= 0x1FFF:
-                            _wRAM[address] = (byte)value;
+                            WRAM[address] = (byte)value;
                             break;
                         case object _ when 0x2100 <= address && address <= 0x213F:
                             _system.PPU.Write8(address, value);
@@ -275,7 +295,7 @@ namespace SNESFromScratch.CPU
                             _system.APU.Write8IO(address, value);
                             break;
                         case 0x2180:
-                            _wRAM[_wRAMAddress] = (byte)value;
+                            WRAM[_wRAMAddress] = (byte)value;
                             _wRAMAddress = (_wRAMAddress + 1) & 0x1FFFF;
                             break;
                         case 0x2181:
@@ -298,11 +318,11 @@ namespace SNESFromScratch.CPU
             }
             if (bank == 0x7E)
             {
-                _wRAM[address] = (byte)value;
+                WRAM[address] = (byte)value;
             }
             if (bank == 0x7F)
             {
-                _wRAM[address | 0x10000] = (byte)value;
+                WRAM[address | 0x10000] = (byte) value;
             }
             if (incCycles)
             {

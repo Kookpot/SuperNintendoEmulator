@@ -29,7 +29,6 @@
         private int _s;
         private int _psw;
         private int _pc;
-        private int _test;
         private int _control;
         private int _dspAddress;
         private int _cpuI0;
@@ -54,7 +53,6 @@
         private readonly Tmr[] Timer = {new Tmr(), new Tmr(), new Tmr()};
         private int _dspCycles;
 
-        // Write
         public void Write8IO(int address, int value)
         {
             switch (address & 3)
@@ -74,7 +72,6 @@
             }
         }
 
-        // Read
         public int Read8IO(int address)
         {
             int returnVal = 0;
@@ -99,7 +96,6 @@
         public void Reset()
         {
             DSP = new DSP(this);
-            _test = 0xA;
             _control = 0xB0;
             Timer[0].Clock = 128;
             Timer[1].Clock = 128;
@@ -909,55 +905,55 @@
                     Cycles += 3;
                     break;
                 case 0x19:
-                    Write8DP(_x, _OR(Read8DP(_x), Read8DP(_y))); 
+                    Write8DP(_x, OR(Read8DP(_x), Read8DP(_y))); 
                     Cycles += 5;
                     break;
                 case 0x8:
-                    _a = _OR(_a, Read8(IMM())); 
+                    _a = OR(_a, Read8(IMM())); 
                     Cycles += 2;
                     break;
                 case 0x6:
-                    _a = _OR(_a, Read8DP(_x)); 
+                    _a = OR(_a, Read8DP(_x)); 
                     Cycles += 3;
                     break;
                 case 0x17:
-                    _a = _OR(_a, Read8(DINDY())); 
+                    _a = OR(_a, Read8(DINDY())); 
                     Cycles += 6;
                     break;
                 case 0x7:
-                    _a = _OR(_a, Read8(DINDX())); 
+                    _a = OR(_a, Read8(DINDX())); 
                     Cycles += 6;
                     break;
                 case 0x4:
-                    _a = _OR(_a, Read8(D())); 
+                    _a = OR(_a, Read8(D())); 
                     Cycles += 3;
                     break;
                 case 0x14:
-                    _a = _OR(_a, Read8(DX())); 
+                    _a = OR(_a, Read8(DX())); 
                     Cycles += 4;
                     break;
                 case 0x5:
-                    _a = _OR(_a, Read8(ABS())); 
+                    _a = OR(_a, Read8(ABS())); 
                     Cycles += 4;
                     break;
                 case 0x15:
-                    _a = _OR(_a, Read8(ABSX())); 
+                    _a = OR(_a, Read8(ABSX())); 
                     Cycles += 5;
                     break;
                 case 0x16:
-                    _a = _OR(_a, Read8(ABSY())); 
+                    _a = OR(_a, Read8(ABSY())); 
                     Cycles += 5;
                     break;
                 case 0x9:
                     src = D();
                     dst = D();
-                    Write8(dst, _OR(Read8(dst), Read8(src)));
+                    Write8(dst, OR(Read8(dst), Read8(src)));
                     Cycles += 6;
                     break;
                 case 0x18:
                     src = IMM();
                     dst = D();
-                    Write8(dst, _OR(Read8(dst), Read8(src)));
+                    Write8(dst, OR(Read8(dst), Read8(src)));
                     Cycles += 5;
                     break;
                 case 0x2A:
@@ -1804,7 +1800,7 @@
             SetFlag((_psw & (int) Flags.Carry) == 0, Flags.Carry);
         }
 
-        public int _OR(int l, int r)
+        public int OR(int l, int r)
         {
             int returnVal = l | r;
             SetZNFlags8((byte) returnVal);
@@ -1968,14 +1964,7 @@
                     }
                     break;
                 case object _ when 0xFFC0 <= address && address <= 0xFFFF:
-                    if ((_control & 0x80) != 0)
-                    {
-                        returnVal = Properties.Resources.spc700[address & 0x3F];
-                    }
-                    else
-                    {
-                        returnVal = WRAM[address];
-                    }
+                    returnVal = (_control & 0x80) != 0 ? Properties.Resources.spc700[address & 0x3F] : WRAM[address];
                     break;
                 default:
                     returnVal = WRAM[address];
@@ -2025,7 +2014,6 @@
                     switch (address & 0xF)
                     {
                         case 0x0:
-                            _test = value;
                             break;
                         case 0x1:
                             _control = value;
@@ -2097,12 +2085,6 @@
         {
             Write8(address, value & 0xFF);
             Write8(AddWB(address, 1), (value >> 8) & 0xFF);
-        }
-
-        private void Write16WP(int address, int value)
-        {
-            Write8(address, value & 0xFF);
-            Write8(AddWP(address, 1), (value >> 8) & 0xFF);
         }
 
         private void Write8DP(int address, int value)

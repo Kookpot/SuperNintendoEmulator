@@ -11,7 +11,7 @@ namespace SNESFromScratch.PictureProcessing
         public int Stat77 { get; set; }
         public int Stat78 { get; set; }
         public int[] BackBuffer { get; private set; } = new int[57344];
-        public byte[] VRAM { get; private set; } = new byte[65536];
+        private readonly byte[] _vRAM = new byte[65536];
         public int OpHorizontalCounter { get; set; }
         public int OpVerticalCounter { get; set; }
 
@@ -281,8 +281,6 @@ namespace SNESFromScratch.PictureProcessing
 
         public void Write8(int address, int value)
         {
-            //counter++;
-            //Analyzer.WriteLine("PPU Write8:" + counter + ":" +  + address + ":" + value);
             switch (address)
             {
                 case 0x2100:
@@ -432,7 +430,7 @@ namespace SNESFromScratch.PictureProcessing
                     {
                         _vAddress = (_vAddress + _vInc) & 0x7FFF;
                     }
-                    VRAM[addr << 1] = (byte) value;
+                    _vRAM[addr << 1] = (byte) value;
                     break;
                 case 0x2119:
                     addr = TransVAddr();
@@ -440,7 +438,7 @@ namespace SNESFromScratch.PictureProcessing
                     {
                         _vAddress = (_vAddress + _vInc) & 0x7FFF;
                     }
-                    VRAM[(addr << 1) | 1] = (byte) value;
+                    _vRAM[(addr << 1) | 1] = (byte) value;
                     break;
                 case 0x211A:
                     _m7Selection = value;
@@ -630,7 +628,7 @@ namespace SNESFromScratch.PictureProcessing
                                 mosCounter += 1;
                             }
                         }
-                        int chrAddr = VRAM[(tmx + (tmy << 7)) << 1] * 128;
+                        int chrAddr = _vRAM[(tmx + (tmy << 7)) << 1] * 128;
                         if (xOver || yOver)
                         {
                             if (scrnOver == 2)
@@ -642,7 +640,7 @@ namespace SNESFromScratch.PictureProcessing
                                 chrAddr = 0;
                             }
                         }
-                        byte color = VRAM[chrAddr + 1 + (pixelY << 4) + (pixelX << 1)];
+                        byte color = _vRAM[chrAddr + 1 + (pixelY << 4) + (pixelX << 1)];
                         bool pri = (color & 0x80) != 0;
                         if (layer == 0 || (_setIni & 0x40) != 0 && layer == 1 && pri == foreGround)
                         {
@@ -723,11 +721,11 @@ namespace SNESFromScratch.PictureProcessing
                                 break;
                         }
                         tmAddr &= 0xFFFE;
-                        bool pri = (VRAM[tmAddr + 1] & 0x20) != 0;
+                        bool pri = (_vRAM[tmAddr + 1] & 0x20) != 0;
                         if (pri == foreGround)
                         {
-                            int verticalLow = VRAM[tmAddr];
-                            int verticalHigh = VRAM[tmAddr + 1];
+                            int verticalLow = _vRAM[tmAddr];
+                            int verticalHigh = _vRAM[tmAddr + 1];
                             int tile = verticalLow | (verticalHigh << 8);
                             int chrNum = tile & 0x3FF;
                             int cgNum = ((tile & 0x1C00) >> 10) << bpp;
@@ -1061,8 +1059,8 @@ namespace SNESFromScratch.PictureProcessing
                     break;
             }
             tmAddress &= 0xFFFE;
-            int vl = VRAM[tmAddress];
-            int vh = VRAM[tmAddress + 1];
+            int vl = _vRAM[tmAddress];
+            int vh = _vRAM[tmAddress + 1];
             return vl | (vh << 8);
         }
 
@@ -1070,39 +1068,39 @@ namespace SNESFromScratch.PictureProcessing
         {
             byte color = 0;
             int bit = 0x80 >> x;
-            if ((VRAM[address] & bit) != 0)
+            if ((_vRAM[address] & bit) != 0)
             {
                 color |= 0x1;
             }
-            if ((VRAM[address + 1] & bit) != 0)
+            if ((_vRAM[address + 1] & bit) != 0)
             {
                 color |= 0x2;
             }
             if (bpp != 2)
             {
-                if ((VRAM[address + 16] & bit) != 0)
+                if ((_vRAM[address + 16] & bit) != 0)
                 {
                     color |= 0x4;
                 }
-                if ((VRAM[address + 17] & bit) != 0)
+                if ((_vRAM[address + 17] & bit) != 0)
                 {
                     color |= 0x8;
                 }
                 if (bpp == 8)
                 {
-                    if ((VRAM[address + 32] & bit) != 0)
+                    if ((_vRAM[address + 32] & bit) != 0)
                     {
                         color |= 0x10;
                     }
-                    if ((VRAM[address + 33] & bit) != 0)
+                    if ((_vRAM[address + 33] & bit) != 0)
                     {
                         color |= 0x20;
                     }
-                    if ((VRAM[address + 48] & bit) != 0)
+                    if ((_vRAM[address + 48] & bit) != 0)
                     {
                         color |= 0x40;
                     }
-                    if ((VRAM[address + 49] & bit) != 0)
+                    if ((_vRAM[address + 49] & bit) != 0)
                     {
                         color |= 0x80;
                     }
@@ -1126,6 +1124,8 @@ namespace SNESFromScratch.PictureProcessing
             int rOverCounter = 0;
             int tOverCounter = 0; 
             int characterBase = (_objectSelection & 3) << 14;
+            int nameSelect = ((_objectSelection >> 3) & 3) << 13;
+
             int offset;
             if (_oamPrimary)
             {
@@ -1154,6 +1154,10 @@ namespace SNESFromScratch.PictureProcessing
                 }
                 characterNum |= (attribute & 1) << 8;
                 int palNum = (attribute >> 1) & 7;
+                if ((characterNum & 0x100) != 0)
+                {
+                    characterBase |= nameSelect;
+                }
                 int priority = (attribute >> 4) & 3;
                 bool horizontalFlip = (attribute & 0x40) != 0;
                 bool verticalFlip = (attribute & 0x80) != 0;
@@ -1341,8 +1345,8 @@ namespace SNESFromScratch.PictureProcessing
         private void PreFetch()
         {
             int addr = TransVAddr();
-            int low = VRAM[addr << 1];
-            int high = VRAM[(addr << 1) | 1];
+            int low = _vRAM[addr << 1];
+            int high = _vRAM[(addr << 1) | 1];
             _vPreFetch = low | (high << 8);
         }
 
@@ -1369,7 +1373,6 @@ namespace SNESFromScratch.PictureProcessing
             return ((Value << 3) | (Value >> (Bits - 3))) & ((1 << Bits) - 1);
         }
 
-        // Integer Sign
         private static int Sign8(int value)
         {
             if ((value & 0x80) != 0)

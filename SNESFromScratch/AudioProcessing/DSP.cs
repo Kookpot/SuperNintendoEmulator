@@ -89,7 +89,6 @@ namespace SNESFromScratch.AudioProcessing
         private int _mVolR;
         private int _eVolL;
         private int _eVolR;
-        private int _kOn;
         private int _kOff;
         private int _flag;
         private int _endX;
@@ -102,7 +101,7 @@ namespace SNESFromScratch.AudioProcessing
         private int _eSA;
         private int _eDl;
 
-        private ISPC700 _parent;
+        private readonly ISPC700 _parent;
 
         public DSP(ISPC700 spc700)
         {
@@ -195,7 +194,7 @@ namespace SNESFromScratch.AudioProcessing
                     {
                         currentChannel.EnvState = ADSR.Release;
                     }
-                    _endX |= (1 << channelIndex);
+                    _endX |= 1 << channelIndex;
                 }
                 else
                 {
@@ -317,16 +316,16 @@ namespace SNESFromScratch.AudioProcessing
                         switch ((currentChannel.Gain >> 5) & 3)
                         {
                             case 0:
-                                currentChannel.Env -= 32; // Linear Dec.
+                                currentChannel.Env -= 32;
                                 break;
                             case 1:
-                                currentChannel.Env = currentChannel.Env - ((currentChannel.Env - 1) >> 8) + 1; // Exp. Dec.
+                                currentChannel.Env = currentChannel.Env - ((currentChannel.Env - 1) >> 8) + 1;
                                 break;
                             case 2:
-                                currentChannel.Env += 32; // Linear Inc.
+                                currentChannel.Env += 32;
                                 break;
                             case 3:
-                                currentChannel.Env = currentChannel.Env + currentChannel.Env < 0x600 ? 32 : 8; // Bent Inc.
+                                currentChannel.Env = currentChannel.Env + currentChannel.Env < 0x600 ? 32 : 8;
                                 break;
                         }
                     }

@@ -14,5 +14,6 @@ namespace SNESFromScratch.CPU
         bool IRQPending { get; set; }
         void DoNMI();
         void LoadSRAM();
+        byte[] WRAM { get; }
     }
 }

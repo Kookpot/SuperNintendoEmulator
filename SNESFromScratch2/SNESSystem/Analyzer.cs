@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SNESFromScratch.SNESSystem
+namespace SNESFromScratch2.SNESSystem
 {
     public class Analyzer
     {
@@ -18,8 +18,7 @@ namespace SNESFromScratch.SNESSystem
             Writer.Flush();
             Writer.Close();
             Writer.Dispose();
-            Writer = new StreamWriter(Counter + ".txt");
-            Writer.AutoFlush = false;
+            Writer = new StreamWriter(Counter + ".txt") {AutoFlush = false};
         }
 
         public static void WriteLine(string line)
