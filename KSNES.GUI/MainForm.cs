@@ -151,7 +151,6 @@ namespace KSNES.GUI
         public void LockFPS(object sender, EventArgs arg)
         {
             Application.DoEvents();
-            _fps.LockFramerate();
             Text = _fps.GetFPS();
             Application.DoEvents();
         }

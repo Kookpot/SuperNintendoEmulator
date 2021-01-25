@@ -4,6 +4,5 @@
     {
         void HiResTimerInitialize();
         string GetFPS();
-        void LockFramerate();
     }
 }

@@ -34,7 +34,7 @@ namespace KSNES.GUI
         public ISNESSystem SNESSystem { get; private set; }
 
         public ISNESSystem SaveSNESSystem { get; set; }
-        private ISystemManager _systemManager;
+        private readonly ISystemManager _systemManager;
 
         private bool _selectOnly;
         public bool SelectOnly
@@ -123,7 +123,7 @@ namespace KSNES.GUI
                 NameLabel.Text = $"Save Name: {_selectedObject.Name}";
                 try
                 {
-                    _systemManager.Load(_selectedObject.Path);
+                    SNESSystem = _systemManager.Load(_selectedObject.Path);
                     SNESSystem.GameName = _selectedObject.GameName;
                     if (new FileInfo(SNESSystem.FileName).Exists)
                     {
@@ -159,6 +159,8 @@ namespace KSNES.GUI
 
         private void OpenSaveFilesDialog_Load(object sender, EventArgs e)
         {
+            _lst.Clear();
+            listBox1.Items.Clear();
             _renderer.SetTargetControl(pictureBox1);
             listBox1.SelectedIndexChanged += ObjectSelected;
             ReloadButton.Click += Reload;
