@@ -18,7 +18,7 @@ namespace SNESFromScratch2.SNESSystem
         public IAPU APU { get; private set; }
 
         [JsonIgnore]
-        public IROM ROM { get; private set; }
+        public IROM ROM { get; set; }
 
         private byte[] _ram = new byte[0x20000];
 
@@ -104,19 +104,23 @@ namespace SNESFromScratch2.SNESSystem
         private bool[] _hdmaDoTransfer = new bool[8];
         private bool[] _hdmaTerminated = new bool[8];
         private int _dmaOffIndex;
+        private int _frames;
         public int OpenBus { get; private set; }
         public string FileName { get; set; }
 
         public event EventHandler FrameRendered;
 
         [JsonIgnore]
-        public IRenderer Renderer { get; }
+        public IRenderer Renderer { get; set; }
+
+        [JsonIgnore]
+        public IAudioHandler AudioHandler { get; set; }
 
         [JsonIgnore]
         public string GameName { get; set; }
 
         [JsonIgnore]
-        private readonly IFPS _fps;
+        public IFPS FPS { get; set; }
 
         [JsonIgnore]
         private Control _form;
@@ -124,30 +128,29 @@ namespace SNESFromScratch2.SNESSystem
         [JsonIgnore]
         private bool _isExecuting;
 
-        public SNESSystem(ICPU cpu, IRenderer renderer, IFPS fps, IROM rom, IPPU ppu, IAPU apu)
+        public SNESSystem(ICPU cpu, IRenderer renderer, IFPS fps, IROM rom, IPPU ppu, IAPU apu, IAudioHandler audioHandler)
         {
             CPU = cpu;
             Renderer = renderer;
-            _fps = fps;
+            AudioHandler = audioHandler;
+            FPS = fps;
             ROM = rom;
-            rom.SetSystem(this);
+            rom?.SetSystem(this);
             PPU = ppu;
-            PPU.SetSystem(this);
+            PPU?.SetSystem(this);
             APU = apu;
-            CPU.SetSystem(this);
+            CPU?.SetSystem(this);
         }
 
-        public void Merge(ISNESSystem system)
+        public ISNESSystem Merge(ISNESSystem system)
         {
-            GameName = system.GameName;
-            CPU = system.CPU;
-            APU = system.APU;
-            CPU.SetSystem(this);
-            PPU = system.PPU;
-            PPU.SetSystem(this);
-            FileName = system.FileName;
-            byte[] data = File.ReadAllBytes(FileName);
-            LoadRom(data);
+            system.AudioHandler = AudioHandler;
+            system.Renderer = Renderer;
+            system.FPS = FPS;
+            system.ROM = ROM;
+            ROM.SetSystem(system);
+            system.APU.Attach();
+            return system;
         }
 
         public void LoadROM(string fileName, Control form)
@@ -156,16 +159,18 @@ namespace SNESFromScratch2.SNESSystem
             byte[] data = File.ReadAllBytes(FileName);
             LoadRom(data);
             GameName = ROM.Header.Name;
+            Reset1();
             CPU.Reset();
             PPU.Reset();
             APU.Reset();
-            Reset();
+            Reset2();
             Run(form);
         }
 
         public void StopEmulation()
         {
             _isExecuting = false;
+            AudioHandler.Pauze();
         }
 
         public bool IsRunning()
@@ -175,21 +180,27 @@ namespace SNESFromScratch2.SNESSystem
 
         public void ResumeEmulation()
         {
-            if (ROM.Header != null)
+            AudioHandler.Resume();
+            if (!string.IsNullOrEmpty(FileName))
             {
+                if (ROM?.Header == null)
+                {
+                    byte[] data = File.ReadAllBytes(FileName);
+                    LoadRom(data);
+                }
                 ROM.LoadSRAM();
                 _isExecuting = true;
                 while (_isExecuting)
                 {
                     RunFrame(false);
                     Renderer.RenderBuffer(PPU.GetPixels());
-                    _fps.LockFramerate();
-                    _form.Text = _fps.GetFPS();
+                    FPS.LockFramerate();
+                    _form.Text = FPS.GetFPS();
                     FrameRendered?.Invoke(this, null);
                     //Analyzer.IncreaseFrame();
                     Application.DoEvents();
-                    //snes.setSamples(audioHandler.sampleBufferL, audioHandler.sampleBufferR);
-                    //audioHandler.nextBuffer();
+                    APU.SetSamples(AudioHandler.SampleBufferL, AudioHandler.SampleBufferR);
+                    AudioHandler.NextBuffer();
                 }
             }
         }
@@ -225,13 +236,21 @@ namespace SNESFromScratch2.SNESSystem
             adr &= 0xffff;
             if (bank == 0x7e || bank == 0x7f)
             {
-                _ram[((bank & 0x1) << 16) | adr] = (byte)value;
+                if (adr == 339 && value == 102)
+                {
+                    var str = "";
+                }
+                _ram[((bank & 0x1) << 16) | adr] = (byte) value;
             }
             if (adr < 0x8000 && (bank < 0x40 || bank >= 0x80 && bank < 0xc0))
             {
                 if (adr < 0x2000)
                 {
-                    _ram[adr & 0x1fff] = (byte)value;
+                    if (adr == 339 && value != 38)
+                    {
+                        var str = "";
+                    }
+                    _ram[adr & 0x1fff] = (byte) value;
                 }
                 if (adr >= 0x2100 && adr < 0x2200)
                 {
@@ -246,10 +265,10 @@ namespace SNESFromScratch2.SNESSystem
                     WriteReg(adr, value);
                 }
             }
-            ROM.Write(bank, adr, (byte)value);
+            ROM.Write(bank, adr, (byte) value);
         }
 
-        private void Reset()
+        private void Reset1()
         {
             _ram = new byte[0x20000];
             _dmaBadr = new byte[8];
@@ -260,9 +279,13 @@ namespace SNESFromScratch2.SNESSystem
             _hdmaTableAdr = new ushort[8];
             _hdmaRepCount = new byte[8];
             _dmaUnusedByte = new byte[8];
+        }
 
+        private void Reset2()
+        {
             XPos = 0;
             YPos = 0;
+            _frames = 0;
             _cpuCyclesLeft = 5 * 8 + 12;
             _cpuMemOps = 0;
             _apuCatchCycles = 0;
@@ -286,6 +309,7 @@ namespace SNESFromScratch2.SNESSystem
             _joypad2AutoRead = 0;
             _joypadStrobe = false;
             _joypad1State = 0;
+            _joypad2State = 0;
             _multiplyA = 0xff;
             _divA = 0xffff;
             _divResult = 0x101;
@@ -450,6 +474,7 @@ namespace SNESFromScratch2.SNESSystem
                 {
                     CatchUpApu();
                     YPos = 0;
+                    _frames++;
                 }
             }
         }
@@ -468,7 +493,7 @@ namespace SNESFromScratch2.SNESSystem
 
         private void CatchUpApu() 
         {
-            long catchUpCycles = (long) _apuCatchCycles & 0xffffffff;
+            long catchUpCycles = ((long) _apuCatchCycles) & 0xffffffff;
             for (var i = 0; i < catchUpCycles; i++)
             {
                 APU.Cycle();
@@ -568,8 +593,8 @@ namespace SNESFromScratch2.SNESSystem
                     _hdmaTimer += 8;
                     if (_hdmaInd[i])
                     {
-                        _dmaSize[i] = (byte) Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true);
-                        _dmaSize[i] |= (byte) (Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true) << 8);
+                        _dmaSize[i] = (ushort) Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true);
+                        _dmaSize[i] |= (ushort) (Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true) << 8);
                         _hdmaTimer += 16;
                     }
                     _hdmaDoTransfer[i] = true;
@@ -630,8 +655,8 @@ namespace SNESFromScratch2.SNESSystem
                         _hdmaRepCount[i] = (byte) Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true);
                         if (_hdmaInd[i])
                         {
-                            _dmaSize[i] = (byte) Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true);
-                            _dmaSize[i] |= (byte) (Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true) << 8);
+                            _dmaSize[i] = (ushort) Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true);
+                            _dmaSize[i] |= (ushort) (Read((_dmaAadrBank[i] << 16) | _hdmaTableAdr[i]++, true) << 8);
                             _hdmaTimer += 16;
                         }
                         if (_hdmaRepCount[i] == 0)
@@ -899,6 +924,10 @@ namespace SNESFromScratch2.SNESSystem
             switch (adr)
             {
                 case 0x80:
+                    if (_ramAdr == 339 && value == 102)
+                    {
+                        var str = "";
+                    }
                     _ram[_ramAdr++] = (byte) value;
                     _ramAdr &= 0x1ffff;
                     return;
@@ -923,7 +952,7 @@ namespace SNESFromScratch2.SNESSystem
             {
                 return _ram[((bank & 0x1) << 16) | adr];
             }
-            if (adr < 0x8000 && (bank < 0x40 || (bank >= 0x80 && bank < 0xc0)))
+            if (adr < 0x8000 && (bank < 0x40 || bank >= 0x80 && bank < 0xc0))
             {
                 if (adr < 0x2000)
                 {
@@ -991,19 +1020,14 @@ namespace SNESFromScratch2.SNESSystem
             return _fastMem && bank >= 0x80 ? 6 : 8;
         }
 
-        //private void SetSamples(byte[] left, byte[] right)
-        //{
-        //    APU.SetSamples(left, right);
-        //}
-
         public void SetKeyDown(SNESButton button)
         {
-            _joypad1State |= (int)button;
+            _joypad1State |= 1 << (int) button;
         }
 
         public void SetKeyUp(SNESButton button)
         {
-            _joypad1State &= ~(int)button;
+            _joypad1State &= ~(1 << (int) button) & 0xfff;
         }
 
         private static Header ParseHeader(byte[] rom)

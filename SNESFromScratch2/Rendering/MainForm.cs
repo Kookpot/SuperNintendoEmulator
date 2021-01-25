@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 using SNESFromScratch2.SNESSystem;
 
 namespace SNESFromScratch2.Rendering
@@ -10,12 +9,11 @@ namespace SNESFromScratch2.Rendering
     public sealed partial class MainForm : Form
     {
         private readonly IFPS _fps;
-        private readonly ISNESSystem _system;
+        private ISNESSystem _system;
         private readonly IRenderer _renderer;
         private readonly IKeyMapper _keyMapper;
-        private readonly ISystemManager _systemManager;
 
-        public MainForm(ISNESSystem system, IRenderer renderer, IFPS fps, IKeyMapper keyMapper, ISystemManager systemManager)
+        public MainForm(ISNESSystem system, IRenderer renderer, IFPS fps, IKeyMapper keyMapper)
         {
             Load += FrmMainLoad;
             KeyDown += FrmMainKeyDown;
@@ -26,7 +24,6 @@ namespace SNESFromScratch2.Rendering
             _system = system;
             _renderer = renderer;
             _keyMapper = keyMapper;
-            _systemManager = systemManager;
             DoubleBuffered = true;
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
         }
@@ -76,6 +73,7 @@ namespace SNESFromScratch2.Rendering
 
         private void OpenROMToolStripMenuItemClick(object sender, EventArgs e)
         {
+            _system.StopEmulation();
             var fileName = string.Empty;
             using (var openFileDialog = new OpenFileDialog { Title = "Open ROM of Super Nintendo", Filter = "ROM SMC/SFC|*.smc;*.sfc" })
             {
@@ -85,6 +83,10 @@ namespace SNESFromScratch2.Rendering
                     {
                         fileName = openFileDialog.FileName;
                     }
+                }
+                else
+                {
+                    _system.ResumeEmulation();
                 }
             }
             if (!string.IsNullOrEmpty(fileName))
@@ -99,8 +101,10 @@ namespace SNESFromScratch2.Rendering
 
         private void InputToolStripMenuItemClick(object sender, EventArgs e)
         {
+            _system.StopEmulation();
             var popup = new InputChangerForm(_keyMapper);
             popup.ShowDialog(this);
+            _system.ResumeEmulation();
         }
 
         private void SaveGamePositionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -127,7 +131,7 @@ namespace SNESFromScratch2.Rendering
             var result = dialog.ShowDialog();
             if (result == DialogResult.OK)
             {
-                _system.Merge(dialog.SNESSystem);
+                _system =_system.Merge(dialog.SNESSystem);
                 _system?.Run(this);
             }
             else

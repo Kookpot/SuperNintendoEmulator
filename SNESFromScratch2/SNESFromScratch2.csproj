@@ -55,6 +55,9 @@
     <Reference Include="SharpDX.DXGI, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.DXGI.4.2.0\lib\net45\SharpDX.DXGI.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.XAudio2, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.XAudio2.4.2.0\lib\net45\SharpDX.XAudio2.dll</HintPath>
+    </Reference>
     <Reference Include="SimpleInjector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleInjector.5.2.0\lib\net461\SimpleInjector.dll</HintPath>
     </Reference>
@@ -84,8 +87,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioProcessing\APU.cs" />
+    <Compile Include="AudioProcessing\XAudio2Handler.cs" />
     <Compile Include="AudioProcessing\DSP.cs" />
     <Compile Include="AudioProcessing\IAPU.cs" />
+    <Compile Include="AudioProcessing\IAudioHandler.cs" />
     <Compile Include="AudioProcessing\IDSP.cs" />
     <Compile Include="AudioProcessing\ISPC700.cs" />
     <Compile Include="AudioProcessing\SPC700.cs" />
@@ -111,7 +116,6 @@
     <Compile Include="Rendering\SharpDXRenderer.cs" />
     <Compile Include="Rendering\SystemMananger.cs" />
     <Compile Include="Rendering\TestConverter.cs" />
-    <Compile Include="SNESSystem\Analyzer.cs" />
     <Compile Include="SNESSystem\Header.cs" />
     <Compile Include="SNESSystem\IHasAccessToSystem.cs" />
     <Compile Include="SNESSystem\ISNESSystem.cs" />

@@ -37,7 +37,7 @@ namespace SNESFromScratch2.ROM
                 using (Stream stream = File.Open(fileName, FileMode.Open, FileAccess.Read))
                 {
                     BinaryFormatter bformatter = new BinaryFormatter();
-                    //_sram = (byte[])bformatter.Deserialize(stream);
+                    _sram = (byte[])bformatter.Deserialize(stream);
                 }
             }
         }
@@ -73,14 +73,14 @@ namespace SNESFromScratch2.ROM
 
         private void SaveSRAM(object state)
         {
-            //var fileName = _system.FileName.Replace(".smc", ".srm").Replace(".sfc", ".srm");
-            //using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.Write))
-            //{
-            //    BinaryFormatter bformatter = new BinaryFormatter();
-            //    bformatter.Serialize(stream, _sram);
-            //}
-            //_sRAMTimer.Dispose();
-            //_sRAMTimer = null;
+            var fileName = _system.FileName.Replace(".smc", ".srm").Replace(".sfc", ".srm");
+            using (Stream stream = File.Open(fileName, FileMode.Create, FileAccess.Write))
+            {
+                BinaryFormatter bformatter = new BinaryFormatter();
+                bformatter.Serialize(stream, _sram);
+            }
+            _sRAMTimer.Dispose();
+            _sRAMTimer = null;
         }
     }
 }

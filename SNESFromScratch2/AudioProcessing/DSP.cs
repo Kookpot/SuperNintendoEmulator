@@ -95,16 +95,10 @@ namespace SNESFromScratch2.AudioProcessing
 
         private int _dirPage;
 
-        public DSP()
-        {
-            for (var i = 0; i < 8; i++)
-            {
-                _rateNums[i * 5 + 3] = 1;
-            }
-        }
-
         public void Reset()
         {
+            _ram = new byte[0x80];
+            _decodeBuffer = new short[19 * 8];
             _rateNums = new short[5 * 8];
             for (var i = 0; i < 8; i++)
             {
@@ -113,8 +107,7 @@ namespace SNESFromScratch2.AudioProcessing
             SamplesL = new float[534];
             SamplesR = new float[534];
             SampleOffset = 0;
-            _ram = new byte[0x80];
-            _decodeBuffer = new short[19 * 8];
+            
             _pitch = new int[8];
             _counter = new int[8];
             _pitchMod = new bool[8];
@@ -173,8 +166,8 @@ namespace SNESFromScratch2.AudioProcessing
                 totalR = 0;
             }
             HandleNoise();
-            SamplesL[SampleOffset] = totalL / 0x8000;
-            SamplesR[SampleOffset] = totalR / 0x8000;
+            SamplesL[SampleOffset] = (float) totalL / 0x8000;
+            SamplesR[SampleOffset] = (float) totalR / 0x8000;
             SampleOffset++;
             if (SampleOffset > 533)
             {
@@ -252,8 +245,8 @@ namespace SNESFromScratch2.AudioProcessing
                 case 0x55:
                 case 0x65:
                 case 0x75:
-                    _rateNums[channel * 5 + 0] = (short)_rates[(value & 0xf) * 2 + 1];
-                    _rateNums[channel * 5 + 1] = (short)_rates[((value & 0x70) >> 4) * 2 + 16];
+                    _rateNums[channel * 5 + 0] = (short) _rates[(value & 0xf) * 2 + 1];
+                    _rateNums[channel * 5 + 1] = (short) _rates[((value & 0x70) >> 4) * 2 + 16];
                     _useGain[channel] = (value & 0x80) == 0;
                     break;
                 case 0x6:
@@ -264,7 +257,7 @@ namespace SNESFromScratch2.AudioProcessing
                 case 0x56:
                 case 0x66:
                 case 0x76:
-                    _rateNums[channel * 5 + 2] = (short)_rates[value & 0x1f];
+                    _rateNums[channel * 5 + 2] = (short) _rates[value & 0x1f];
                     _sustainLevel[channel] = (((value & 0xe0) >> 5) + 1) * 0x100;
                     break;
                 case 0x7:
@@ -279,7 +272,7 @@ namespace SNESFromScratch2.AudioProcessing
                     {
                         _directGain[channel] = false;
                         _gainMode[channel] = (value & 0x60) >> 5;
-                        _rateNums[channel * 5 + 4] = (short)_rates[value & 0x1f];
+                        _rateNums[channel * 5 + 4] = (short) _rates[value & 0x1f];
                     }
                     else
                     {
@@ -305,8 +298,8 @@ namespace SNESFromScratch2.AudioProcessing
                         {
                             _prevFlags[i] = 0;
                             int sampleAdr = (_dirPage << 8) + _srcn[i] * 4;
-                            byte startAdr = _apu.RAM[sampleAdr & 0xffff];
-                            startAdr |= (byte)(_apu.RAM[(sampleAdr + 1) & 0xffff] << 8);
+                            int startAdr = _apu.RAM[sampleAdr & 0xffff];
+                            startAdr |= _apu.RAM[(sampleAdr + 1) & 0xffff] << 8;
                             _decodeOffset[i] = startAdr;
                             _gain[i] = 0;
                             if (_useGain[i])
@@ -382,7 +375,8 @@ namespace SNESFromScratch2.AudioProcessing
             _ram[adr & 0x7f] = value;
         }
 
-        private void DecodeBrr(int ch) {
+        private void DecodeBrr(int ch) 
+        {
             _decodeBuffer[ch * 19] = _decodeBuffer[ch * 19 + 16];
             _decodeBuffer[ch * 19 + 1] = _decodeBuffer[ch * 19 + 17];
             _decodeBuffer[ch * 19 + 2] = _decodeBuffer[ch * 19 + 18];

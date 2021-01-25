@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SimpleInjector.Diagnostics;
 using SNESFromScratch2.SNESSystem;
 
 namespace SNESFromScratch2.PictureProcessing
@@ -133,7 +134,6 @@ namespace SNESFromScratch2.PictureProcessing
         private bool _overscan;
         private bool _objInterlace;
         private bool _interlace;
-        private int counter;
 
         public bool FrameOverscan { get; private set; }
         private bool _frameInterlace;
@@ -204,9 +204,9 @@ namespace SNESFromScratch2.PictureProcessing
             _highOam = new ushort[0x10];
             _spriteLineBuffer = new byte[256];
             _spritePrioBuffer = new byte[256];
+            _pixelOutput = new int[57344];
             _mode7Xcoords = new int[256];
             _mode7Ycoords = new int[256];
-            _pixelOutput = new int[57344];
             _cgramAdr= 0;
             _cgramSecond = false;
             _cgramBuffer = 0;
@@ -251,7 +251,6 @@ namespace SNESFromScratch2.PictureProcessing
             _objInterlace = false;
             _interlace = false;
             FrameOverscan = false;
-            _frameInterlace = false;
             _evenFrame = false;
             LatchedHpos = 0;
             LatchedVpos = 0;
@@ -293,6 +292,7 @@ namespace SNESFromScratch2.PictureProcessing
             _fixedColorB = 0;
             _fixedColorG = 0;
             _fixedColorR = 0;
+            _frameInterlace = false;
             _tilemapBuffer = new int[4];
             _tileBufferP1 = new int[4];
             _tileBufferP2 = new int[4];
@@ -303,6 +303,7 @@ namespace SNESFromScratch2.PictureProcessing
             _optHorBuffer = new int[2];
             _optVerBuffer = new int[2];
             _lastOrigTileX = new[] { -1, -1 };
+            _frameInterlace = false;
         }
 
         public void SetSystem(ISNESSystem snes)
@@ -465,7 +466,7 @@ namespace SNESFromScratch2.PictureProcessing
                     {
                         if (_oamInHigh)
                         {
-                            _highOam[_oamAdr & 0xf] = (ushort)((_highOam[_oamAdr & 0xf] & 0xff00) | value);
+                            _highOam[_oamAdr & 0xf] = (ushort) ((_highOam[_oamAdr & 0xf] & 0xff00) | value);
                         }
                         else
                         {
@@ -477,12 +478,12 @@ namespace SNESFromScratch2.PictureProcessing
                     {
                         if (_oamInHigh)
                         {
-                            _highOam[_oamAdr & 0xf] = (ushort)((_highOam[_oamAdr & 0xf] & 0xff) | (value << 8));
+                            _highOam[_oamAdr & 0xf] = (ushort) ((_highOam[_oamAdr & 0xf] & 0xff) | (value << 8));
                         }
                         else
                         {
                             _oamBuffer = (_oamBuffer & 0xff) | (value << 8);
-                            _oam[_oamAdr] = (ushort)_oamBuffer;
+                            _oam[_oamAdr] = (ushort) _oamBuffer;
                         }
                         _oamAdr++;
                         _oamAdr &= 0xff;
@@ -525,7 +526,6 @@ namespace SNESFromScratch2.PictureProcessing
                 case 0x0d:
                     _mode7Hoff = Get13Signed((value << 8) | _mode7Prev);
                     _mode7Prev = value;
-                    //TODO
                     _bgHoff[(adr - 0xd) >> 1] = (value << 8) | (_offPrev1 & 0xf8) | (_offPrev2 & 0x7);
                     _offPrev1 = value;
                     _offPrev2 = value;
@@ -540,7 +540,6 @@ namespace SNESFromScratch2.PictureProcessing
                 case 0x0e:
                     _mode7Voff = Get13Signed((value << 8) | _mode7Prev);
                     _mode7Prev = value;
-                    //TODO
                     _bgVoff[(adr - 0xe) >> 1] = (value << 8) | (_offPrev1 & 0xff);
                     _offPrev1 = value;
                     return;
@@ -577,7 +576,7 @@ namespace SNESFromScratch2.PictureProcessing
                     return;
                 case 0x18:
                     int adr2 = GetVramRemap();
-                    _vram[adr2] = (ushort)((_vram[adr2] & 0xff00) | value);
+                    _vram[adr2] = (ushort) ((_vram[adr2] & 0xff00) | value);
                     if (!_vramIncOnHigh)
                     {
                         _vramAdr += _vramInc;
@@ -586,7 +585,7 @@ namespace SNESFromScratch2.PictureProcessing
                     return;
                 case 0x19:
                     int adr3 = GetVramRemap();
-                    _vram[adr3] = (ushort)((_vram[adr3] & 0xff) | (value << 8));
+                    _vram[adr3] = (ushort) ((_vram[adr3] & 0xff) | (value << 8));
                     if (_vramIncOnHigh)
                     {
                         _vramAdr += _vramInc;
@@ -638,7 +637,7 @@ namespace SNESFromScratch2.PictureProcessing
                     else
                     {
                         _cgramBuffer = (_cgramBuffer & 0xff) | (value << 8);
-                        _cgram[_cgramAdr++] = (ushort)_cgramBuffer;
+                        _cgram[_cgramAdr++] = (ushort) _cgramBuffer;
                         _cgramAdr &= 0xff;
                         _cgramSecond = false;
                     }
@@ -783,6 +782,7 @@ namespace SNESFromScratch2.PictureProcessing
                 _rangeOver = false;
                 _timeOver = false;
                 FrameOverscan = false;
+                _frameInterlace = false;
                 _spriteLineBuffer =  new byte[256];
                 if (!_forcedBlank)
                 {
@@ -796,6 +796,7 @@ namespace SNESFromScratch2.PictureProcessing
                     _oamAdr = _oamRegAdr;
                     _oamInHigh = _oamRegInHigh;
                 }
+                _frameInterlace = _interlace;
                 _evenFrame = !_evenFrame;
             }
             else if (line > 0 && line < (FrameOverscan ? 240 : 225))
@@ -871,7 +872,7 @@ namespace SNESFromScratch2.PictureProcessing
                             b2 = b2 < 0 ? 0 : b2;
                         }
                     }
-                    var realColor = ((byte)(b2 * bMult) & 0xff) | (((byte)(g2 * bMult) & 0xff) << 8) | (((byte)(r2 * bMult) & 0xff) << 16);
+                    var realColor = ((byte) (b2 * bMult) & 0xff) | (((byte) (g2 * bMult) & 0xff) << 8) | (((byte) (r2 * bMult) & 0xff) << 16);
                     _pixelOutput[(line - 1) * 256 + i] = (int) (realColor | 0xFF000000);
                     i++;
                 }
@@ -977,7 +978,7 @@ namespace SNESFromScratch2.PictureProcessing
 
         private bool GetMathEnabled(int x, int l, int pal) 
         {
-            if (_preventMath == 3 || _preventMath == 2 && GetWindowState(x, 5) || _preventMath == 1 && !GetWindowState(x, 5))
+            if (_preventMath == 3 || (_preventMath == 2 && GetWindowState(x, 5)) || (_preventMath == 1 && !GetWindowState(x, 5)))
             {
                 return false;
             }
@@ -1149,8 +1150,8 @@ namespace SNESFromScratch2.PictureProcessing
                             int tileColumn = (ex & 0x40) > 0 ? size - 1 - k : k;
                             int tileNum = tile + _spriteTileOffsets[tileRow * 8 + tileColumn];
                             tileNum &= 0xff;
-                            ushort tileP1 = _vram[(adr + tileNum * 16 + sprRow) & 0x7fff];
-                            ushort tileP2 = _vram[(adr + tileNum * 16 + sprRow + 8) & 0x7fff];
+                            int tileP1 = _vram[(adr + tileNum * 16 + sprRow) & 0x7fff];
+                            int tileP2 = _vram[(adr + tileNum * 16 + sprRow + 8) & 0x7fff];
                             for (var j = 0; j < 8; j++)
                             {
                                 int shift = (ex & 0x40) > 0 ? j : 7 - j;
@@ -1229,7 +1230,6 @@ namespace SNESFromScratch2.PictureProcessing
                 _lastTileFetchedX[0] = x;
                 _lastTileFetchedY[0] = y;
             }
-
             if (l == 1 && pixelData >> 7 != p)
             {
                 return 0;
@@ -1261,20 +1261,20 @@ namespace SNESFromScratch2.PictureProcessing
 
         private static int Get13Signed(int val)
         {
-            if ((val & 0x1000) > 0)
+            if ((val & 0x1000) != 0)
             {
                 return -(8192 - (val & 0xfff));
             }
-            return val & 0xfff;
+            return val;
         }
 
        private static int Get16Signed(int val) 
        {
-            if ((val & 0x8000) > 0)
-            {
-                return -(65536 - val);
+           if ((val & 0x8000) != 0)
+           {
+               return -(65536 - val);
             }
-            return val;
+           return val;
         }
 
         private static int GetMultResult(int a, int b) {

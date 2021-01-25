@@ -53,41 +53,41 @@ namespace SNESFromScratch2.CPU
             IMP, IDX, IMM, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
             REL, IDYr, IDP, ISY, DP, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, ABS, ABXr, ABX, ALX,
             ABS, IDX, ABL, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
-            REL, IDYr, IDP, ISY, DPX, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, ABXr, ABXr, ABX, ALX,
+            REL, IDYr, IDP, ISY, DPX, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, ABXr,ABXr, ABX, ALX,
             IMP, IDX, IMM, SR, BM, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
-            REL, IDYr, IDP, ISY, BM, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, ABL, ABXr, ABX, ALX,
+            REL, IDYr, IDP, ISY, BM, DPX, DPX, ILY, IMP, ABYr,IMP, IMP, ABL, ABXr, ABX, ALX,
             IMP, IDX, RLL, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, IND, ABS, ABS, ABL,
-            REL, IDYr, IDP, ISY, DPX, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, IAX, ABXr, ABX, ALX,
+            REL, IDYr, IDP, ISY, DPX, DPX, DPX, ILY, IMP, ABYr,IMP, IMP, IAX, ABXr, ABX, ALX,
             REL, IDX, RLL, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
             REL, IDY, IDP, ISY, DPX, DPX, DPY, ILY, IMP, ABY, IMP, IMP, ABS, ABX, ABX, ALX,
             IMMx, IDX, IMMx, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
-            REL, IDYr, IDP, ISY, DPX, DPX, DPY, ILY, IMP, ABYr, IMP, IMP, ABXr, ABXr, ABYr, ALX,
+            REL, IDYr, IDP, ISY, DPX, DPX, DPY, ILY, IMP, ABYr, IMP, IMP, ABXr, ABXr, ABYr,ALX,
             IMMx, IDX, IMM, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
             REL, IDYr, IDP, ISY, DP, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, IAL, ABXr, ABX, ALX,
-            IMMx, IDX, IMM, SR, DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
-            REL, IDYr, IDP, ISY, IMMl, DPX, DPX, ILY, IMP, ABYr, IMP, IMP, IAX, ABXr, ABX, ALX,
+            IMMx, IDX, IMM, SR , DP, DP, DP, IDL, IMP, IMMm, IMP, IMP, ABS, ABS, ABS, ABL,
+            REL, IDYr, IDP, ISY, IMMl,DPX, DPX, ILY, IMP, ABYr, IMP, IMP, IAX, ABXr, ABX, ALX,
             IMP, IMP, IMP
         };
             
         [JsonIgnore]
         private readonly int[] _cycles = {
-              7, 6, 7, 4, 5, 3, 5, 6, 3, 2, 2, 4, 6, 4, 6, 5,
-              2, 5, 5, 7, 5, 4, 6, 6, 2, 4, 2, 2, 6, 4, 7, 5,
-              6, 6, 8, 4, 3, 3, 5, 6, 4, 2, 2, 5, 4, 4, 6, 5,
-              2, 5, 5, 7, 4, 4, 6, 6, 2, 4, 2, 2, 4, 4, 7, 5,
-              6, 6, 2, 4, 7, 3, 5, 6, 3, 2, 2, 3, 3, 4, 6, 5,
-              2, 5, 5, 7, 7, 4, 6, 6, 2, 4, 3, 2, 4, 4, 7, 5,
-              6, 6, 6, 4, 3, 3, 5, 6, 4, 2, 2, 6, 5, 4, 6, 5,
-              2, 5, 5, 7, 4, 4, 6, 6, 2, 4, 4, 2, 6, 4, 7, 5,
-              3, 6, 4, 4, 3, 3, 3, 6, 2, 2, 2, 3, 4, 4, 4, 5,
-              2, 6, 5, 7, 4, 4, 4, 6, 2, 5, 2, 2, 4, 5, 5, 5,
-              2, 6, 2, 4, 3, 3, 3, 6, 2, 2, 2, 4, 4, 4, 4, 5,
-              2, 5, 5, 7, 4, 4, 4, 6, 2, 4, 2, 2, 4, 4, 4, 5,
-              2, 6, 3, 4, 3, 3, 5, 6, 2, 2, 2, 3, 4, 4, 6, 5,
-              2, 5, 5, 7, 6, 4, 6, 6, 2, 4, 3, 3, 6, 4, 7, 5,
-              2, 6, 3, 4, 3, 3, 5, 6, 2, 2, 2, 3, 4, 4, 6, 5,
-              2, 5, 5, 7, 5, 4, 6, 6, 2, 4, 4, 2, 8, 4, 7, 5,
-              7, 7, 7
+            7, 6, 7, 4, 5, 3, 5, 6, 3, 2, 2, 4, 6, 4, 6, 5,
+            2, 5, 5, 7, 5, 4, 6, 6, 2, 4, 2, 2, 6, 4, 7, 5,
+            6, 6, 8, 4, 3, 3, 5, 6, 4, 2, 2, 5, 4, 4, 6, 5,
+            2, 5, 5, 7, 4, 4, 6, 6, 2, 4, 2, 2, 4, 4, 7, 5,
+            6, 6, 2, 4, 7, 3, 5, 6, 3, 2, 2, 3, 3, 4, 6, 5,
+            2, 5, 5, 7, 7, 4, 6, 6, 2, 4, 3, 2, 4, 4, 7, 5,
+            6, 6, 6, 4, 3, 3, 5, 6, 4, 2, 2, 6, 5, 4, 6, 5,
+            2, 5, 5, 7, 4, 4, 6, 6, 2, 4, 4, 2, 6, 4, 7, 5,
+            3, 6, 4, 4, 3, 3, 3, 6, 2, 2, 2, 3, 4, 4, 4, 5,
+            2, 6, 5, 7, 4, 4, 4, 6, 2, 5, 2, 2, 4, 5, 5, 5,
+            2, 6, 2, 4, 3, 3, 3, 6, 2, 2, 2, 4, 4, 4, 4, 5,
+            2, 5, 5, 7, 4, 4, 4, 6, 2, 4, 2, 2, 4, 4, 4, 5,
+            2, 6, 3, 4, 3, 3, 5, 6, 2, 2, 2, 3, 4, 4, 6, 5,
+            2, 5, 5, 7, 6, 4, 6, 6, 2, 4, 3, 3, 6, 4, 7, 5,
+            2, 6, 3, 4, 3, 3, 5, 6, 2, 2, 2, 3, 4, 4, 6, 5,
+            2, 5, 5, 7, 5, 4, 6, 6, 2, 4, 4, 2, 8, 4, 7, 5,
+            7, 7, 7
         };
 
         [JsonIgnore]
@@ -144,9 +144,9 @@ namespace SNESFromScratch2.CPU
 
         public void Reset()
         {
-            _br = new ushort[6];
-            _br[PC] = (ushort)(_snes.Read(0xfffc) | (_snes.Read(0xfffd) << 8));
             _r = new byte[2];
+            _br = new ushort[6];
+            _br[PC] = (ushort) (_snes.Read(0xfffc) | (_snes.Read(0xfffd) << 8));
             _n = false;
             _v = false;
             _m = true;
@@ -197,7 +197,6 @@ namespace SNESFromScratch2.CPU
                         CyclesLeft = _cycles[instr];
                         mode = _modes[instr];
                     }
-
                     var (item1, item2) = GetAdr(mode);
                     if (_functions[instr] == null)
                     {
@@ -263,21 +262,21 @@ namespace SNESFromScratch2.CPU
             _n = (value & 0x8000) > 0;
         }
 
-        private static short GetSigned(int value, bool byt) 
+        private static int GetSigned(int value, bool byt) 
         {
             if (byt)
             {
-                return (short) ((value & 0xff) > 127 ? -(256 - (value & 0xff)) : value & 0xff);
+                return (value & 0xff) > 127 ? -(256 - (value & 0xff)) : value & 0xff;
             }
-            return (short) (value > 32767 ? -(65536 - value) : value);
+            return value > 32767 ? -(65536 - value) : value;
         }
 
-       private void DoBranch(bool check, ushort rel)
+       private void DoBranch(bool check, int rel)
        {
             if (check)
             {
                 CyclesLeft++;
-                _br[PC] += rel;
+                _br[PC] = (ushort) (_br[PC] + rel);
             }
         }
 
@@ -1101,52 +1100,52 @@ namespace SNESFromScratch2.CPU
 
         private void Bcc(int adr, int adrh) 
         {
-            DoBranch(!_c, (ushort)adr);
+            DoBranch(!_c, adr);
         }
 
         private void Bcs(int adr, int adrh)
         {
-            DoBranch(_c, (ushort)adr);
+            DoBranch(_c, adr);
         }
 
         private void Beq(int adr, int adrh) 
         {
-            DoBranch(_z, (ushort)adr);
+            DoBranch(_z, adr);
         }
 
         private void Bmi(int adr, int adrh) 
         {
-            DoBranch(_n, (ushort)adr);
+            DoBranch(_n, adr);
         }
 
         private void Bne(int adr, int adrh) 
         {
-            DoBranch(!_z, (ushort)adr);
+            DoBranch(!_z, adr);
         }
 
         private void Bpl(int adr, int adrh) 
         {
-            DoBranch(!_n, (ushort) adr);
+            DoBranch(!_n, adr);
         }
 
         private void Bra(int adr, int adrh) 
         {
-            _br[PC] += (ushort) adr;
+            _br[PC] = (ushort) (_br[PC] + adr);
         }
 
         private void Bvc(int adr, int adrh) 
         {
-            DoBranch(!_v, (ushort) adr);
+            DoBranch(!_v, adr);
         }
 
         private void Bvs(int adr, int adrh)
         {
-            DoBranch(_v, (ushort) adr);
+            DoBranch(_v, adr);
         }
 
         private void Brl(int adr, int adrh)
         {
-            _br[PC] += (ushort) adr;
+            _br[PC] = (ushort) (_br[PC] + adr);
         }
 
         private void Jmp(int adr, int adrh)

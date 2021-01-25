@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using SNESFromScratch2.AudioProcessing;
 using SNESFromScratch2.CPU;
 using SNESFromScratch2.PictureProcessing;
+using SNESFromScratch2.ROM;
 using SNESFromScratch2.SNESSystem;
 
 namespace SNESFromScratch2.Rendering

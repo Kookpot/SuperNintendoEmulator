@@ -13,7 +13,7 @@ namespace SNESFromScratch2.Rendering
     {
         private readonly List<Type> _mapper = new List<Type>
         {
-            typeof(SNESSystem.SNESSystem), typeof(CPU.CPU), typeof(PPU), typeof(ROM.ROM), typeof(APU), typeof(SPC700), typeof(DSP),
+            typeof(SNESSystem.SNESSystem), typeof(CPU.CPU), typeof(PPU), typeof(APU), typeof(SPC700), typeof(DSP)
         };
 
         protected override List<MemberInfo> GetSerializableMembers(Type objectType)

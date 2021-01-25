@@ -7,8 +7,7 @@ namespace SNESFromScratch2.AudioProcessing
         private readonly ISPC700 _spc;
         private readonly IDSP _dsp;
 
-        [JsonIgnore]
-        private readonly byte[] _bootRom =
+        [JsonIgnore] private readonly byte[] _bootRom =
         {
             0xcd, 0xef, 0xbd, 0xe8, 0x00, 0xc6, 0x1d, 0xd0, 0xfc, 0x8f, 0xaa, 0xf4, 0x8f, 0xbb, 0xf5, 0x78,
             0xcc, 0xf4, 0xd0, 0xfb, 0x2f, 0x19, 0xeb, 0xf4, 0xd0, 0xfc, 0x7e, 0xf4, 0xd0, 0x0b, 0xe4, 0xf5,
@@ -44,20 +43,25 @@ namespace SNESFromScratch2.AudioProcessing
         public APU(ISPC700 spc, IDSP dsp)
         {
             _spc = spc;
-            _spc.SetAPU(this);
             _dsp = dsp;
-            _dsp.SetAPU(this);
+            Attach();
+        }
+
+        public void Attach()
+        {
+            _spc?.SetAPU(this);
+            _dsp?.SetAPU(this);
         }
 
         public void Reset()
         {
-            _spc.Reset();
-            _dsp.Reset();
-            RAM  = new byte[0x10000];
+            RAM = new byte[0x10000];
             SpcWritePorts = new byte[4];
             SpcReadPorts = new byte[6];
             _dspAdr = 0;
             _dspRomReadable = true;
+            _spc.Reset();
+            _dsp.Reset();
             _cycles = 0;
             _timer1int = 0;
             _timer1div = 0;
@@ -83,6 +87,7 @@ namespace SNESFromScratch2.AudioProcessing
             {
                 _dsp.Cycle();
             }
+
             if (_timer1int == 0)
             {
                 _timer1int = 128;
@@ -189,16 +194,19 @@ namespace SNESFromScratch2.AudioProcessing
                         _timer1div = 0;
                         _timer1counter = 0;
                     }
+
                     if (!_timer2enabled && (value & 0x02) > 0)
                     {
                         _timer2div = 0;
                         _timer2counter = 0;
                     }
+
                     if (!_timer3enabled && (value & 0x04) > 0)
                     {
                         _timer3div = 0;
                         _timer3counter = 0;
                     }
+
                     _timer1enabled = (value & 0x01) > 0;
                     _timer2enabled = (value & 0x02) > 0;
                     _timer3enabled = (value & 0x04) > 0;
@@ -208,6 +216,7 @@ namespace SNESFromScratch2.AudioProcessing
                         SpcReadPorts[0] = 0;
                         SpcReadPorts[1] = 0;
                     }
+
                     if ((value & 0x20) > 0)
                     {
                         SpcReadPorts[2] = 0;
@@ -245,6 +254,19 @@ namespace SNESFromScratch2.AudioProcessing
                     break;
             }
             RAM[adr] = value;
+        }
+
+        public void SetSamples(float[] left, float[] right)
+        {
+            const double add = 534.0 / 735.0;
+            double total = 0;
+            for (var i = 0; i < 735; i++)
+            {
+                left[i] = _dsp.SamplesL[(int) total];
+                right[i] = _dsp.SamplesR[(int) total];
+                total += add;
+            }
+            _dsp.SampleOffset = 0;
         }
     }
 }

@@ -30,6 +30,7 @@ namespace SNESFromScratch2
             container.Register<IKeyMapper, KeyMapper>();
             //container.Register<IRenderer, GDIRenderer>();
             container.Register<IRenderer, SharpDXRenderer>();
+            container.Register<IAudioHandler, XAudio2Handler>();
             container.Register<IDSP, DSP>();
             container.Register<ISPC700, SPC700>();
             container.Verify();
