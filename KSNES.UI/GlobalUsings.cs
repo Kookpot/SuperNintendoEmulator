@@ -1,0 +1,15 @@
+﻿global using System.Drawing.Imaging;
+global using System.Runtime.InteropServices;
+global using KSNES.Rendering;
+global using System.Diagnostics;
+global using KSNES.SNESSystem;
+global using System.ComponentModel;
+global using Microsoft.Extensions.DependencyInjection;
+global using SharpDX;
+global using SharpDX.Direct2D1;
+global using System.Configuration;
+global using SharpDX.DXGI;
+global using SharpDX.Mathematics.Interop;
+global using SharpDX.Multimedia;
+global using KSNES.AudioProcessing;
+global using SharpDX.XAudio2;
