@@ -1,0 +1,11 @@
+﻿global using KSNES.AudioProcessing;
+global using KSNES.CPU;
+global using KSNES.PictureProcessing;
+global using KSNES.Rendering;
+global using KSNES.ROM;
+global using KSNES.SNESSystem;
+global using Microsoft.Extensions.DependencyInjection;
+global using System.Drawing;
+global using System.Text;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;

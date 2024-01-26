@@ -1,13 +1,9 @@
-﻿using System;
-using System.Drawing;
+﻿namespace KSNES.Rendering;
 
-namespace KSNES.Rendering
+public interface IHasWidthAndHeight
 {
-    public interface IHasWidthAndHeight
-    {
-        IntPtr Handle { get; }
-        int Width { get; }
-        int Height { get; }
-        Image Image { get; set; }
-    }
+    IntPtr Handle { get; }
+    int Width { get; }
+    int Height { get; }
+    Image Image { get; set; }
 }

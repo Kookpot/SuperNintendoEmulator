@@ -1,10 +1,7 @@
-﻿using KSNES.SNESSystem;
+﻿namespace KSNES.Rendering;
 
-namespace KSNES.Rendering
+public interface ISystemManager
 {
-    public interface ISystemManager
-    {
-        ISNESSystem Load(string fileName);
-        void Write(string fileName, ISNESSystem system);
-    }
+    ISNESSystem Load(string fileName);
+    void Write(string fileName, ISNESSystem system);
 }

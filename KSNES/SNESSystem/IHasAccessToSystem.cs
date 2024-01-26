@@ -1,7 +1,6 @@
-﻿namespace KSNES.SNESSystem
+﻿namespace KSNES.SNESSystem;
+
+public interface IHasAccessToSystem
 {
-    public interface IHasAccessToSystem
-    {
-        void SetSystem(ISNESSystem system);
-    }
+    void SetSystem(ISNESSystem system);
 }

@@ -1,8 +1,7 @@
-﻿namespace KSNES.Rendering
+﻿namespace KSNES.Rendering;
+
+public interface IRenderer
 {
-    public interface IRenderer
-    {
-        void RenderBuffer(int[] buffer);
-        void SetTargetControl(IHasWidthAndHeight box);
-    }
+    void RenderBuffer(int[] buffer);
+    void SetTargetControl(IHasWidthAndHeight box);
 }
